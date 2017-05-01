@@ -32,6 +32,7 @@ Spawns a new process using the given `command`, just like `child_process.spawn()
 
 A `Kapok` instance inherits with [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter)
 
+---
 
 #### Kapok#assert(condition, options)
 
@@ -59,6 +60,7 @@ kapok
 ;
 ```
 
+---
 
 #### Kapok#groupUntil(condition, join)
 
@@ -95,6 +97,7 @@ kapok
 ;
 ```
 
+---
 
 #### Kapok#until(condition)
 
@@ -114,6 +117,7 @@ const kapok = new Kapok('echo', ['# a\n# b\nc']);
 kapok.until(/^[^#]/).assert('c');
 ```
 
+---
 
 #### Kapok#ignoreUntil(condition)
 
@@ -133,6 +137,28 @@ const kapok = new Kapok('echo', ['# a\n# b\nc']);
 kapok.ignoreUntil(/^#/).assert('c');
 ```
 
+---
+
+#### Kapok#done(callback)
+
+- `callback` (Function)
+- Returns (Kapok)
+
+Provide a callback function. It's useful while using async testing framework.
+
+###### Example
+
+Using [jest](http://facebook.github.io/jest/)
+
+```js
+const kapok = new Kapok('echo', ['hello']);
+
+test('echo', (cb) => {
+  kapok.assert('hello').done(cb);
+});
+```
+
+---
 
 #### Event: 'data'
 
