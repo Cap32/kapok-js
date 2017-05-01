@@ -20,29 +20,29 @@ test('should receive ansiMessage on `out:data` event', (done) => {
 	});
 });
 
-test('should `expect()` work', (done) => {
+test('`assert()`', (done) => {
 	const input = 'hello world';
 	const kapok = new Kapok('echo', [input]);
 	kapok
-		.expect('hello world')
+		.assert('hello world')
 		.done(done)
 	;
 });
 
-test('should `expect()` work with multi lines', (done) => {
+test('chaining `assert()`', (done) => {
 	const code = `
 		console.log('hello');
 		console.log('world');
 	`;
 	const kapok = new Kapok('node', ['-e', code]);
 	kapok
-		.expect('hello')
-		.expect('world')
+		.assert('hello')
+		.assert('world')
 		.done(done)
 	;
 });
 
-test('should `groupBy()` work', (done) => {
+test('`groupUntil()`', (done) => {
 	const input = { a: 'hello', b: 'world' };
 	const code = `
 		var data = eval(${JSON.stringify(input)});
@@ -50,13 +50,26 @@ test('should `groupBy()` work', (done) => {
 	`;
 	const kapok = new Kapok('node', ['-e', code]);
 	kapok
-		.groupBy(({ message }) => /\}/.test(message))
-		.expect((dataset) => {
-			const str = dataset.map(({ message }) => message).join('');
-			const json = JSON.parse(str);
+		.groupUntil('}')
+		.assert((message) => {
+			const json = JSON.parse(message);
 			expect(json).toEqual(input);
 			return isEqual(json, input);
 		})
+		.done(done)
+	;
+});
+
+test('`ignoreUntil()`', (done) => {
+	const code = `
+		console.log('hello');
+		console.log('world');
+		console.log('!');
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	kapok
+		.ignoreUntil('world')
+		.assert('!')
 		.done(done)
 	;
 });

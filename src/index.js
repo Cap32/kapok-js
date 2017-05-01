@@ -18,10 +18,10 @@ const ensureOptions = (options = {}) => {
 	});
 };
 
-const test = (condition, data) => {
-	if (isFunction(condition)) { return condition(data); }
-	else if (isRegExp(condition)) { return condition.test(data.message); }
-	return condition === data.message;
+const test = (condition, message, dataset) => {
+	if (isFunction(condition)) { return condition(message, dataset); }
+	else if (isRegExp(condition)) { return condition.test(message); }
+	return condition === message;
 };
 
 export default class Kapok extends EventEmitter {
@@ -29,7 +29,8 @@ export default class Kapok extends EventEmitter {
 		super();
 
 		this._fns = [];
-		this.data = {};
+		this.message = '';
+		this.dataset = [];
 
 		const child = spawn(command, args, {
 			...options,
@@ -66,7 +67,8 @@ export default class Kapok extends EventEmitter {
 						exit: ::this.exit,
 					});
 
-					this.data = line;
+					this.message = line.message;
+					this.dataset.push(line);
 					this._next();
 				})
 			;
@@ -96,28 +98,33 @@ export default class Kapok extends EventEmitter {
 		return this;
 	}
 
-	expect(condition, options) {
+	assert(condition, options) {
 		const { errorMessage, action } = ensureOptions(options);
-		this._fns.push((data) => {
-			const matched = test(condition, data);
+		this._fns.push(() => {
+			const { message, dataset } = this;
+			const matched = test(condition, message, dataset);
 			if (!matched) { throw new Error(errorMessage); }
-			action(data);
+			action(message, dataset);
+			dataset.length = 0;
 		});
 		return this;
 	}
 
-	groupBy(groupBy) {
-		if (isNumber(groupBy)) {
-			groupBy = (_, dataset) => dataset.length === groupBy;
+	groupUntil(condition, join = '') {
+		if (isNumber(condition)) {
+			condition = () => this.dataset.length === condition;
 		}
 
-		const dataset = [];
-		const groupFn = (data) => {
-			dataset.push(data);
-			const isCompleted = groupBy(data, dataset);
+		const groupFn = () => {
+			const { dataset } = this;
+			const isCompleted = test(condition, this.message, dataset);
 			if (isCompleted) {
-				dataset.message = dataset.map(({ message }) => message).join('\n');
-				this.data = dataset;
+				if (isFunction(join)) {
+					this.message = join(dataset);
+				}
+				else if (join !== false) {
+					this.message = dataset.map(({ message }) => message).join(join);
+				}
 				this._next();
 			}
 			else {
@@ -128,8 +135,9 @@ export default class Kapok extends EventEmitter {
 		return this;
 	}
 
-	ignore(groupBy) {
-		return this.groupBy(groupBy, () => true);
+	ignoreUntil(condition) {
+		this.groupUntil(condition, false);
+		return this.assert(() => true);
 	}
 
 	done(done) {
@@ -138,7 +146,7 @@ export default class Kapok extends EventEmitter {
 
 	_next() {
 		const fn = this._fns.shift();
-		if (isFunction(fn)) { fn(this.data); }
+		if (isFunction(fn)) { fn(); }
 
 		if (!this._fns.length && isFunction(this._done)) {
 			this._done();
