@@ -1,6 +1,6 @@
 {
   "name": "kapok-js",
-  "description": "A javascript testing tool for cli",
+  "description": "Javascript Testing utilities for CLI",
   "version": "0.0.0",
   "main": "lib/index",
   "files": [
