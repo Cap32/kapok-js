@@ -1,0 +1,5 @@
+# kapok-js
+
+## License
+
+MIT

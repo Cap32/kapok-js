@@ -1,0 +1,60 @@
+{
+  "name": "kapok-js",
+  "description": "A javascript testing tool for cli",
+  "version": "0.0.0",
+  "main": "lib/index",
+  "files": [
+    "README.md",
+    "LICENSE.md",
+    "lib"
+  ],
+  "scripts": {
+    "start": "yarn test -- --watchAll",
+    "test": "cross-env NODE_ENV=development jest",
+    "prebuild": "rimraf lib",
+    "build": "babel src -d lib",
+    "preversion": "yarn test && yarn build"
+  },
+  "author": "cap32",
+  "repository": "Cap32/kapok-js",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "keywords": [],
+  "licenses": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "strip-ansi": "^3.0.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-core": "^6.13.2",
+    "babel-eslint": "^7.2.3",
+    "babel-jest": "^19.0.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.19.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
+    "babel-plugin-transform-es2015-parameters": "^6.18.0",
+    "babel-polyfill": "^6.13.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "babel-register": "^6.11.6",
+    "cross-env": "^4.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jest": "^19.0.1",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "jest": "^19.0.2",
+    "rimraf": "^2.5.4"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "modulePathIgnorePatterns": [
+      "node_modules",
+      "lib"
+    ]
+  }
+}
