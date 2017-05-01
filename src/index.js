@@ -146,8 +146,9 @@ export default class Kapok extends EventEmitter {
 		return this;
 	}
 
-	done(done) {
-		this._done = done;
+	done(callback) {
+		this._done = callback;
+		return this;
 	}
 
 	_next() {
