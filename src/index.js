@@ -140,6 +140,12 @@ export default class Kapok extends EventEmitter {
 		return this.assert(() => true);
 	}
 
+	until(condition) {
+		this.groupUntil(condition, false);
+		this.dataset.length = 0;
+		return this;
+	}
+
 	done(done) {
 		this._done = done;
 	}
