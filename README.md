@@ -1,5 +1,7 @@
 # kapok-js
 
+[![Build Status](https://travis-ci.org/Cap32/kapok-js.svg?branch=master)](https://travis-ci.org/Cap32/kapok-js) [![CircleCI](https://circleci.com/gh/Cap32/kapok-js.svg?style=svg)](https://circleci.com/gh/Cap32/kapok-js)
+
 Javascript Testing utilities for CLI
 
 
