@@ -61,17 +61,15 @@ export default class Kapok extends EventEmitter {
 				}))
 				.filter(({ message }) => message)
 				.forEach((line) => {
-					setTimeout(() => {
-						handleLine(line);
-						this.emit('line', {
-							...line,
-							exit: ::this.exit,
-						});
+					handleLine(line);
+					this.emit('line', {
+						...line,
+						exit: ::this.exit,
+					});
 
-						this.message = line.message;
-						this.dataset.push(line);
-						this._next();
-					}, 10);
+					this.message = line.message;
+					this.dataset.push(line);
+					this._next();
 				})
 			;
 		};
