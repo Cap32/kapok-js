@@ -16,7 +16,6 @@ test('should receive ansiMessage on `out:data` event', (done) => {
 	const kapok = new Kapok('echo', [input]);
 	kapok.on('out:data', ({ ansiMessage, exit }) => {
 		// expect(/\\/.test(JSON.stringify(ansiMessage))).toBeTruthy();
-		console.log('JSON.stringify(ansiMessage)', JSON.stringify(ansiMessage));
 		exit(done);
 	});
 });
