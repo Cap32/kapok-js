@@ -17,6 +17,46 @@ import Kapok from 'kapok-js';
 const kapok = new Kapok('echo', ['hello\nworld']);
 kapok.assert('hello').assert('world');
 ```
+##### Advanced Usage
+
+```js
+import Kapok from 'kapok-js';
+import { isEqual } from 'lodash';
+
+const code = `
+  console.log('🌺');
+  console.log('* * *');
+  console.log('start');
+  console.log(JSON.stringify({ hello: 'world' }, null, 2));
+  console.log('end');
+`;
+
+const kapok = new Kapok('node', ['-e', code]);
+
+kapok.on('data', ({ ansiMessage }) => console.log(ansiMessage));
+
+// will log:
+/*
+🌺
+* * *
+start
+{
+  "hello": "world"
+}
+end
+*/
+
+kapok
+  .ignoreUntil(/\*/) // ignore lines until the line matches `/\*/`
+  .assert('start')
+  .groupUntil('}') // group multi lines until the line is equal with '}', and then `join('')` the grouped lines
+  .assert((message) => isEqual({ hello: 'world' }, JSON.parse(message)))
+  .assert('end')
+  .done(() => {
+    console.log('done');
+  })
+;
+```
 
 
 ## API
@@ -34,7 +74,7 @@ A `Kapok` instance inherits with [EventEmitter](https://nodejs.org/api/events.ht
 
 ---
 
-#### Kapok#assert(condition, options)
+#### Kapok#assert(condition[, options])
 
 - `condition` (String|RegExp|Function): Testing `message`, throw an error if returns `false`. The `message` is the each line data of process outputs
   + If is a `String`, it will return `message === condition`
@@ -62,7 +102,7 @@ kapok
 
 ---
 
-#### Kapok#groupUntil(condition, join)
+#### Kapok#groupUntil(condition[, join])
 
 - `condition` (Number|String|RegExp|Function): Decide when to stop grouping lines
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
