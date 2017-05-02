@@ -167,6 +167,5 @@ export default class Kapok extends EventEmitter {
 		}
 		this.child.kill(signal);
 		this.child.once('close', () => done());
-		// this.child.once('error', () => done());
 	}
 }
