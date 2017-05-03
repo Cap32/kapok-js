@@ -111,3 +111,14 @@ test('`done()` should emit once', (done) => {
 		}
 	}, 2000);
 });
+
+test('should throw Error if assert fails', (done) => {
+	const kapok = new Kapok('echo', ['a']);
+	kapok
+		.assert('b')
+		.done((err) => {
+			expect(err.length).toBe(1);
+			done();
+		})
+	;
+});

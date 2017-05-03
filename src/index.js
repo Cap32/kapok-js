@@ -15,7 +15,8 @@ const ensureOptions = (options = {}) => {
 
 	return defaults(options, {
 		action: noop,
-		showLog: true,
+		shouldShowLog: true,
+		shouldThrowError: false,
 	});
 };
 
@@ -32,6 +33,7 @@ export default class Kapok extends EventEmitter {
 		this._fns = [];
 		this.message = '';
 		this.dataset = [];
+		this.errors = [];
 
 		const child = spawn(command, args, {
 			...options,
@@ -100,22 +102,24 @@ export default class Kapok extends EventEmitter {
 	}
 
 	assert(condition, options) {
-		const { action, showLog } = ensureOptions(options);
+		const {
+			action, shouldShowLog, shouldThrowError, ...other,
+		} = ensureOptions(options);
 
 		const throwError = (error) => {
 			const { message } = error;
-			let { errorMessage } = options;
+			let { errorMessage } = other;
 
 			if (isFunction(errorMessage)) {
 				errorMessage = errorMessage(message, condition);
 			}
 
 			if (!errorMessage) {
-				errorMessage = 'AssertionError: ';
+				errorMessage = chalk.red('AssertionError: ');
 				if (isString(condition)) {
 
 					// eslint-disable-next-line
-					errorMessage += `Expected value to be "${condition}", but received "${message}".`;
+					errorMessage += `Expected value to be "${chalk.green(condition)}", but received "${chalk.red(message)}".`;
 
 				}
 				else {
@@ -124,7 +128,12 @@ export default class Kapok extends EventEmitter {
 			}
 
 			error.message = errorMessage;
-			throw error;
+
+			if (shouldThrowError) { throw error; }
+			else {
+				console.log(errorMessage);
+				this.errors.push(error);
+			}
 		};
 
 		this._fns.push(() => {
@@ -133,7 +142,7 @@ export default class Kapok extends EventEmitter {
 			if (!matched) {
 				throwError(new Error(message));
 			}
-			else if (showLog) {
+			else if (shouldShowLog) {
 				console.log(`\t${chalk.green('✓')} ${chalk.gray(message)}`);
 			}
 			action(message, dataset);
@@ -178,8 +187,14 @@ export default class Kapok extends EventEmitter {
 		return this;
 	}
 
-	done(callback) {
-		this._done = once(callback);
+	done(callback = noop) {
+		this._done = once(() => {
+			const { errors } = this;
+			if (errors.length) {
+				callback(errors);
+			}
+			else { callback(); }
+		});
 		return this;
 	}
 
@@ -198,6 +213,6 @@ export default class Kapok extends EventEmitter {
 			signal = 'SIGTERM';
 		}
 		this.child.kill(signal);
-		this.child.once('close', () => done());
+		this.child.once('close', done);
 	}
 }
