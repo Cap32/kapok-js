@@ -13,7 +13,6 @@ const ensureOptions = (options = {}) => {
 	}
 
 	return defaults(options, {
-		errorMessage: 'Failed',
 		action: noop,
 	});
 };
@@ -99,11 +98,37 @@ export default class Kapok extends EventEmitter {
 	}
 
 	assert(condition, options) {
-		const { errorMessage, action } = ensureOptions(options);
+		const { action } = ensureOptions(options);
+
+		const throwError = (error) => {
+			const { message } = error;
+			let { errorMessage } = options;
+
+			if (isFunction(errorMessage)) {
+				errorMessage = errorMessage(message, condition);
+			}
+
+			if (!errorMessage) {
+				errorMessage = 'AssertionError: ';
+				if (isString(condition)) {
+
+					// eslint-disable-next-line
+					errorMessage += `Expected value to be "${condition}", but received "${message}".`;
+
+				}
+				else {
+					errorMessage += `Message is "${message}"`;
+				}
+			}
+
+			error.message = errorMessage;
+			throw error;
+		};
+
 		this._fns.push(() => {
 			const { message, dataset } = this;
 			const matched = test(condition, message, dataset);
-			if (!matched) { throw new Error(errorMessage); }
+			if (!matched) { throwError(new Error(message)); }
 			action(message, dataset);
 			dataset.length = 0;
 		});
