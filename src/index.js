@@ -153,7 +153,8 @@ export default class Kapok extends EventEmitter {
 
 	groupUntil(condition, join = '', log) {
 		if (isNumber(condition)) {
-			condition = () => this.dataset.length === condition;
+			const line = condition;
+			condition = () => this.dataset.length === line;
 		}
 
 		const groupFn = () => {

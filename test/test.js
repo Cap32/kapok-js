@@ -74,6 +74,20 @@ test('`ignoreUntil()`', (done) => {
 	;
 });
 
+test('`ignoreUntil()` with lines', (done) => {
+	const code = `
+		console.log('1');
+		console.log('2');
+		console.log('3');
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	kapok
+		.ignoreUntil(2)
+		.assert('3')
+		.done(done)
+	;
+});
+
 test('`until()`', (done) => {
 	const code = `
 		console.log('hello');
