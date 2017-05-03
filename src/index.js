@@ -2,6 +2,7 @@
 import { spawn } from 'child_process';
 import EventEmitter from 'events';
 import stripAnsi from 'strip-ansi';
+import chalk from 'chalk';
 import {
 	isFunction, isRegExp, isString, isNumber, defaults, noop, once,
 } from 'lodash';
@@ -14,6 +15,7 @@ const ensureOptions = (options = {}) => {
 
 	return defaults(options, {
 		action: noop,
+		showLog: true,
 	});
 };
 
@@ -98,7 +100,7 @@ export default class Kapok extends EventEmitter {
 	}
 
 	assert(condition, options) {
-		const { action } = ensureOptions(options);
+		const { action, showLog } = ensureOptions(options);
 
 		const throwError = (error) => {
 			const { message } = error;
@@ -128,7 +130,12 @@ export default class Kapok extends EventEmitter {
 		this._fns.push(() => {
 			const { message, dataset } = this;
 			const matched = test(condition, message, dataset);
-			if (!matched) { throwError(new Error(message)); }
+			if (!matched) {
+				throwError(new Error(message));
+			}
+			else if (showLog) {
+				console.log(`\t${chalk.green('✓')} ${chalk.gray(message)}`);
+			}
 			action(message, dataset);
 			dataset.length = 0;
 		});
