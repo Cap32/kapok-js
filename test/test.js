@@ -87,3 +87,27 @@ test('`until()`', (done) => {
 		.done(done)
 	;
 });
+
+test('`done()` should emit once', (done) => {
+	const cb = jest.fn();
+	const code = `
+		console.log('hello');
+		console.log('world');
+		console.log('!');
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	kapok
+		.done(cb)
+		.done(cb)
+		.done(cb)
+	;
+	setTimeout(() => {
+		try {
+			expect(cb.mock.calls.length).toBe(1);
+			done();
+		}
+		catch (err) {
+			done.fail(err);
+		}
+	}, 2000);
+});

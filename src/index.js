@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import EventEmitter from 'events';
 import stripAnsi from 'strip-ansi';
 import {
-	isFunction, isRegExp, isString, isNumber, defaults, noop,
+	isFunction, isRegExp, isString, isNumber, defaults, noop, once,
 } from 'lodash';
 
 const ensureOptions = (options = {}) => {
@@ -147,7 +147,7 @@ export default class Kapok extends EventEmitter {
 	}
 
 	done(callback) {
-		this._done = callback;
+		this._done = once(callback);
 		return this;
 	}
 
