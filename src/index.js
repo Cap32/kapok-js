@@ -114,7 +114,7 @@ export default class Kapok extends EventEmitter {
 				errorMessage = errorMessage(message, condition);
 			}
 
-			if (!errorMessage) {
+			if (!isString(errorMessage)) {
 				errorMessage = chalk.red('AssertionError: ');
 				if (isString(condition)) {
 
@@ -143,7 +143,7 @@ export default class Kapok extends EventEmitter {
 				throwError(new Error(message));
 			}
 			else if (shouldShowLog) {
-				console.log(`\t${chalk.green('✓')} ${chalk.gray(message)}`);
+				console.log(`${chalk.green('✓')} ${chalk.gray(message)}`);
 			}
 			action(message, dataset);
 			dataset.length = 0;
@@ -151,7 +151,7 @@ export default class Kapok extends EventEmitter {
 		return this;
 	}
 
-	groupUntil(condition, join = '') {
+	groupUntil(condition, join = '', log) {
 		if (isNumber(condition)) {
 			condition = () => this.dataset.length === condition;
 		}
@@ -159,6 +159,12 @@ export default class Kapok extends EventEmitter {
 		const groupFn = () => {
 			const { dataset } = this;
 			const isCompleted = test(condition, this.message, dataset);
+
+			if (log) {
+				const logMessage = log(this.message, isCompleted);
+				logMessage && console.log(logMessage);
+			}
+
 			if (isCompleted) {
 				if (isFunction(join)) {
 					this.message = join(dataset);
@@ -177,12 +183,16 @@ export default class Kapok extends EventEmitter {
 	}
 
 	ignoreUntil(condition) {
-		this.groupUntil(condition, false);
-		return this.assert(() => true);
+		this.groupUntil(condition, false, (message) =>
+			chalk.gray(`- ${message}`)
+		);
+		return this.assert(() => true, { shouldShowLog: false });
 	}
 
 	until(condition) {
-		this.groupUntil(condition, false);
+		this.groupUntil(condition, false, (message, isCompleted) => {
+			if (!isCompleted) { return chalk.gray(`- ${message}`); }
+		});
 		this.dataset.length = 0;
 		return this;
 	}
