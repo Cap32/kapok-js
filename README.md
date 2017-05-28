@@ -35,9 +35,6 @@ const code = `
 
 const kapok = new Kapok('node', ['-e', code]);
 
-kapok.on('data', ({ ansiMessage }) => console.log(ansiMessage));
-
-// will log:
 /*
 🌺
 * * *
@@ -49,9 +46,9 @@ end
 */
 
 kapok
-  .ignoreUntil(/\*/) // ignore lines until the line matches `/\*/`
+  .ignoreUntil(/\*/) /* ignore lines until the line matches `/\*/` */
   .assert('start')
-  .groupUntil('}') // group multi lines until the line is equal with '}', and then `join('')` the grouped lines
+  .joinUntil('}') /* group multi lines until the line is equal with '}', and then `join('')` the grouped lines */
   .assert((message) => isEqual({ hello: 'world' }, JSON.parse(message)))
   .assert('end')
   .done(() => {
@@ -63,6 +60,15 @@ kapok
 
 ## API
 
+#### Kapok.config
+
+- `config.shouldShowLog` (Boolean): Show log message or not. Defaults to `true`
+- `config.shouldThrowError` (Boolean): Throw a new Error or not when assert fails. Defaults to `false`
+
+A global config to all `Kapok` instances. Can be override.
+
+---
+
 #### Kapok#constructor(command[, args][, options])
 
 - `command` (String): The command to run
@@ -72,7 +78,7 @@ kapok
 
 Spawns a new process using the given `command`, just like `child_process.spawn()`, but returns a `Kapok` instance.
 
-A `Kapok` instance inherits with [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter)
+`Kapok` inherits [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter)
 
 ---
 
@@ -86,7 +92,9 @@ A `Kapok` instance inherits with [EventEmitter](https://nodejs.org/api/events.ht
     * `dataset` (Array): An array of data. A data includes `message` and `ansiMessage`. `ansiMessage` is like `message`, but includes some ANSI code.
 - `options` (String|Object)
   + `errorMessage` (String): If `condition` returns `false`, it will throw a new error with the message. If the `options` is a `String`, it will become a short hand of `options.errorMessage`
-  + `action` (Function): An addition function to do something while `assert` function is fired
+  + `action` (Function): An addition function to do something while `assert` function fires
+  + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
+  + `shouldThrowError` (Boolean): Throw a new Error or not when assert fails. Defaults to `Kapok.config.shouldThrowError`
 - Returns (Kapok)
 
 Iterate each line of the process outputs, and assert the data message of each line.
@@ -99,26 +107,30 @@ kapok
   .assert('a') /* using `String` */
   .assert(/b/) /* using `RegExp` */
   .assert((message) => message === 'c') /* using `Function` */
+  .done()
 ;
 ```
 
 ---
 
-#### Kapok#groupUntil(condition[, join])
+#### Kapok#joinUntil(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to stop grouping lines
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
   + If is a `Function`, it will return `condition(message, dataset)`
-- `join` (String|Function|false): Decide how to combine each `messages`
-  + If is a `String`, it will combine messages by `messages.join(joinString)`
-  + If is a `Function`, it will combine messages by `join(dataset)`
-  + If is `false`, it won't combine messages
-  + By default, it is an empty string
+- `options` (Object)
+  + `join` (String|Function|false): Join the grouped `messages` into a string
+    * If is a `String`, it will join messages by `messages.join(joinString)`
+    * If is a `Function`, it will join messages by `join(dataset)`
+    * If is `false`, it won't join messages
+    * By default, it is an empty string
+  + `action` (Function): An addition function to do something while condition matched
+  + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
-This method help us to group multi line to pass to the next `assert()`.
+A helper function to join multi lines into a string and pass to the next `assert()`. Joining function will stop when `condition()` matched.
 
 ###### Example
 
@@ -130,24 +142,27 @@ const code = `
 `;
 const kapok = new Kapok('node', ['-e', code]);
 kapok
-  .groupUntil('}')
+  .joinUntil('}')
   .assert((message) => {
     const json = JSON.parse(message);
     return isEqual(json, input);
   })
-  .done(done)
+  .done()
 ;
 ```
 
 ---
 
-#### Kapok#until(condition)
+#### Kapok#until(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to start to assert next line
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
   + If is a `Function`, it will return `condition(message, dataset)`
+- `options` (Object)
+  + `action` (Function): An addition function to do something while condition matched
+  + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
 Message will not pass to the next `assert()` until `condition()` matched.
@@ -156,18 +171,44 @@ Message will not pass to the next `assert()` until `condition()` matched.
 
 ```js
 const kapok = new Kapok('echo', ['# a\n# b\nc']);
-kapok.until(/^[^#]/).assert('c');
+kapok.until(/^[^#]/).assert('c').done(); /* lines before 'c' would be ignored */
 ```
 
 ---
 
-#### Kapok#ignoreUntil(condition)
+#### Kapok#assertUntil(condition[, options])
+
+- `condition` (Number|String|RegExp|Function): Decide when to start to assert
+  + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
+  + If is a `String`, it will return `message === condition`
+  + If is a `RegExp`, it will return `condition.test(message)`
+  + If is a `Function`, it will return `condition(message, dataset)`
+- `options` (Object)
+  + `action` (Function): An addition function to do something while condition matched
+  + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
+- Returns (Kapok)
+
+Message will not pass to the next `assert()` until `condition()` matched.
+
+###### Example
+
+```js
+const kapok = new Kapok('echo', ['# a\n# b\nc']);
+kapok.assertUntil('c').done(); /* lines before 'c' would be ignored */
+```
+
+---
+
+#### Kapok#ignoreUntil(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to stop ignoring
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
   + If is a `Function`, it will return `condition(message, dataset)`
+- `options` (Object)
+  + `action` (Function): An addition function to do something while condition matched
+  + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
 A little like `.until()`, but `.ignoreUntil()` will event ignore the last line of the matched `condition()`.
@@ -176,7 +217,7 @@ A little like `.until()`, but `.ignoreUntil()` will event ignore the last line o
 
 ```js
 const kapok = new Kapok('echo', ['# a\n# b\nc']);
-kapok.ignoreUntil(/^#/).assert('c');
+kapok.ignoreUntil(/^#/).assert('c'); /* lines before 'c' would be ignored */
 ```
 
 ---
