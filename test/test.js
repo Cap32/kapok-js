@@ -2,6 +2,8 @@
 import Kapok from '../src';
 import { isEqual } from 'lodash';
 
+Kapok.config.shouldShowLog = false;
+
 test('should receive message on `out:data` event', (done) => {
 	const input = 'hello world';
 	const kapok = new Kapok('echo', [input]);
@@ -51,6 +53,24 @@ test('`groupUntil()`', (done) => {
 	const kapok = new Kapok('node', ['-e', code]);
 	kapok
 		.groupUntil('}')
+		.assert((message) => {
+			const json = JSON.parse(message);
+			expect(json).toEqual(input);
+			return isEqual(json, input);
+		})
+		.done(done)
+	;
+});
+
+test('`joinUntil()`', (done) => {
+	const input = { a: 'hello', b: 'world' };
+	const code = `
+		var data = eval(${JSON.stringify(input)});
+		console.log(JSON.stringify(data, null, 2));
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	kapok
+		.joinUntil('}')
 		.assert((message) => {
 			const json = JSON.parse(message);
 			expect(json).toEqual(input);
@@ -114,6 +134,19 @@ test('`until()`', (done) => {
 	kapok
 		.until('!')
 		.assert('!')
+		.done(done)
+	;
+});
+
+test('`assertUntil()`', (done) => {
+	const code = `
+		console.log('hello');
+		console.log('world');
+		console.log('!');
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	kapok
+		.assertUntil('!')
 		.done(done)
 	;
 });

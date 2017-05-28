@@ -3,22 +3,7 @@ import { spawn } from 'child_process';
 import EventEmitter from 'events';
 import stripAnsi from 'strip-ansi';
 import chalk from 'chalk';
-import {
-	isFunction, isRegExp, isString, isNumber, defaults, noop, once,
-} from 'lodash';
-
-const ensureOptions = (options = {}) => {
-	if (isString(options)) {
-		const errorMessage = options;
-		options = { errorMessage };
-	}
-
-	return defaults(options, {
-		action: noop,
-		shouldShowLog: true,
-		shouldThrowError: false,
-	});
-};
+import { isFunction, isRegExp, isString, isNumber, defaults, noop, once } from 'lodash';
 
 const test = (condition, message, dataset) => {
 	if (isFunction(condition)) { return condition(message, dataset); }
@@ -26,7 +11,21 @@ const test = (condition, message, dataset) => {
 	return condition === message;
 };
 
+const deprecated = function deprecated(oldMethod, newMethod) {
+	if (!deprecated[oldMethod]) { return; }
+	console.warn(
+		`Method "${oldMethod}()" is deprecated. ` +
+		`Please use "${newMethod}()" instead.`
+	);
+	deprecated[oldMethod] = true;
+};
+
 export default class Kapok extends EventEmitter {
+	static config = {
+		shouldShowLog: true,
+		shouldThrowError: false,
+	};
+
 	constructor(command, args, options) {
 		super();
 
@@ -102,6 +101,19 @@ export default class Kapok extends EventEmitter {
 	}
 
 	assert(condition, options) {
+
+		const ensureOptions = (options = {}) => {
+			if (isString(options)) {
+				const errorMessage = options;
+				options = { errorMessage };
+			}
+
+			return defaults(options, {
+				action: noop,
+				...Kapok.config,
+			});
+		};
+
 		const {
 			action, shouldShowLog, shouldThrowError, ...other,
 		} = ensureOptions(options);
@@ -151,19 +163,26 @@ export default class Kapok extends EventEmitter {
 		return this;
 	}
 
-	groupUntil(condition, join = '', log) {
+	_group(condition, options = {}) {
+		const {
+			shouldShowLog = Kapok.config.shouldShowLog,
+			getLogMessage,
+			join,
+			action,
+		} = options;
+
 		if (isNumber(condition)) {
 			const line = condition;
 			condition = () => this.dataset.length === line;
 		}
 
-		const groupFn = () => {
+		const group = () => {
 			const { dataset } = this;
 			const isCompleted = test(condition, this.message, dataset);
 
-			if (log) {
-				const logMessage = log(this.message, isCompleted);
-				logMessage && console.log(logMessage);
+			if (getLogMessage) {
+				const logMessage = getLogMessage(this.message, isCompleted);
+				shouldShowLog && logMessage && console.log(logMessage);
 			}
 
 			if (isCompleted) {
@@ -173,29 +192,61 @@ export default class Kapok extends EventEmitter {
 				else if (join !== false) {
 					this.message = dataset.map(({ message }) => message).join(join);
 				}
+
+				if (isFunction(action)) {
+					action(this.message, dataset);
+				}
 				this._next();
 			}
 			else {
-				this._fns.unshift(groupFn);
+				this._fns.unshift(group);
 			}
 		};
-		this._fns.push(groupFn);
+		this._fns.push(group);
 		return this;
 	}
 
-	ignoreUntil(condition) {
-		this.groupUntil(condition, false, (message) =>
-			chalk.gray(`- ${message}`)
-		);
+	groupUntil(condition, join = '') {
+		deprecated('groupUntil', 'joinUntil');
+		return this._group(condition, { join });
+	}
+
+	joinUntil(condition, options) {
+		const getLogMessage = (message) => chalk.gray(`+ ${message}`);
+		return this._group(condition, {
+			join: '',
+			...options,
+			getLogMessage,
+		});
+	}
+
+	ignoreUntil(condition, options) {
+		const getLogMessage = (message) => chalk.gray(`- ${message}`);
+		this._group(condition, {
+			...options,
+			join: false,
+			getLogMessage,
+		});
 		return this.assert(() => true, { shouldShowLog: false });
 	}
 
-	until(condition) {
-		this.groupUntil(condition, false, (message, isCompleted) => {
+	until(condition, options) {
+		const getLogMessage = (message, isCompleted) => {
 			if (!isCompleted) { return chalk.gray(`- ${message}`); }
+		};
+		this._group(condition, {
+			...options,
+			join: false,
+			getLogMessage,
 		});
 		this.dataset.length = 0;
 		return this;
+	}
+
+	assertUntil(condition, options = {}) {
+		const { shouldShowLog } = options;
+		this.until(condition, { shouldShowLog });
+		return this.assert(condition, options);
 	}
 
 	done(callback = noop) {
@@ -218,7 +269,7 @@ export default class Kapok extends EventEmitter {
 		}
 	}
 
-	exit(signal, done = () => {}) {
+	exit(signal, done = noop) {
 		if (isFunction(signal)) {
 			done = signal;
 			signal = 'SIGTERM';
