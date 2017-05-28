@@ -45,7 +45,7 @@ end
 
 const kapok = new Kapok('node', ['-e', code]); /* just like childProcess.spawn() */
 kapok
-  .ignoreUntil(/\*/) /* ignore lines until the line matches `/\*/` */
+  .ignoreUntil(/\*/) /* ignore lines until the line matches "/\*/" */
   .assert('start')
   .joinUntil('}') /* join multi lines until the line is equal to '}', and then join the lines into a string */
   .assert((message) => isEqual({ hello: 'world' }, JSON.parse(message)))
