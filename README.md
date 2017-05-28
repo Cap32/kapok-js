@@ -33,8 +33,6 @@ const code = `
   console.log('end');
 `;
 
-const kapok = new Kapok('node', ['-e', code]);
-
 /*
 🌺
 * * *
@@ -45,10 +43,11 @@ start
 end
 */
 
+const kapok = new Kapok('node', ['-e', code]); /* just like childProcess.spawn() */
 kapok
   .ignoreUntil(/\*/) /* ignore lines until the line matches `/\*/` */
   .assert('start')
-  .joinUntil('}') /* group multi lines until the line is equal with '}', and then `join('')` the grouped lines */
+  .joinUntil('}') /* join multi lines until the line is equal to '}', and then join the lines into a string */
   .assert((message) => isEqual({ hello: 'world' }, JSON.parse(message)))
   .assert('end')
   .done(() => {
