@@ -197,7 +197,7 @@ export default class Kapok extends EventEmitter {
 				if (isFunction(action)) {
 					await action(this.message, dataset);
 				}
-				this._next();
+				await this._next();
 			}
 			else {
 				this._fns.unshift(group);
@@ -264,7 +264,13 @@ export default class Kapok extends EventEmitter {
 
 	async _next() {
 		const fn = this._fns.shift();
-		if (isFunction(fn)) { await fn(); }
+
+		try {
+			if (isFunction(fn)) { await fn(); }
+		}
+		catch (err) {
+			this.errors.push(err);
+		}
 
 		if (!this._fns.length && isFunction(this._done)) {
 			this._done();
