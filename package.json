@@ -1,7 +1,7 @@
 {
   "name": "kapok-js",
   "description": "Javascript Testing utilities for CLI",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "main": "lib/index",
   "files": [
     "README.md",
