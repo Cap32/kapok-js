@@ -91,7 +91,7 @@ Spawns a new process using the given `command`, just like `child_process.spawn()
     * `dataset` (Array): An array of data. A data includes `message` and `ansiMessage`. `ansiMessage` is like `message`, but includes some ANSI code.
 - `options` (String|Object)
   + `errorMessage` (String): If `condition` returns `false`, it will throw a new error with the message. If the `options` is a `String`, it will become a short hand of `options.errorMessage`
-  + `action` (Function): An addition function to do something while `assert` function fires
+  + `action` (Function): An addition function to do something while `assert` function fires. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
   + `shouldThrowError` (Boolean): Throw a new Error or not when assert fails. Defaults to `Kapok.config.shouldThrowError`
 - Returns (Kapok)
@@ -125,7 +125,7 @@ kapok
     * If is a `Function`, it will join messages by `join(dataset)`
     * If is `false`, it won't join messages
     * By default, it is an empty string
-  + `action` (Function): An addition function to do something while condition matched
+  + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
@@ -160,7 +160,7 @@ kapok
   + If is a `RegExp`, it will return `condition.test(message)`
   + If is a `Function`, it will return `condition(message, dataset)`
 - `options` (Object)
-  + `action` (Function): An addition function to do something while condition matched
+  + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
@@ -183,7 +183,7 @@ kapok.until(/^[^#]/).assert('c').done(); /* lines before 'c' would be ignored */
   + If is a `RegExp`, it will return `condition.test(message)`
   + If is a `Function`, it will return `condition(message, dataset)`
 - `options` (Object)
-  + `action` (Function): An addition function to do something while condition matched
+  + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
@@ -206,7 +206,7 @@ kapok.assertUntil('c').done(); /* lines before 'c' would be ignored */
   + If is a `RegExp`, it will return `condition.test(message)`
   + If is a `Function`, it will return `condition(message, dataset)`
 - `options` (Object)
-  + `action` (Function): An addition function to do something while condition matched
+  + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
 - Returns (Kapok)
 
@@ -221,12 +221,12 @@ kapok.ignoreUntil(/^#/).assert('c'); /* lines before 'c' would be ignored */
 
 ---
 
-#### Kapok#done(callback)
+#### Kapok#done([callback])
 
-- `callback` (Function)
-- Returns (Kapok)
+- `callback` (Function): Provide a callback function. If there's no error, the first argument is `undefined`, otherwise, the first argument is an array of errors
+- Returns (Promise)
 
-Provide a callback function. It's useful while using async testing framework.
+Stop asserting. Could provide a callback function or return a promise for async function.
 
 ###### Example
 
@@ -235,9 +235,7 @@ Using [jest](http://facebook.github.io/jest/)
 ```js
 const kapok = new Kapok('echo', ['hello']);
 
-test('echo', (cb) => {
-  kapok.assert('hello').done(cb);
-});
+test('echo', async () => kapok.assert('hello').done());
 ```
 
 ---
