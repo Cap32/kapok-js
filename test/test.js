@@ -2,7 +2,8 @@
 import Kapok from '../src';
 import { isEqual } from 'lodash';
 
-Kapok.config.shouldShowLog = false;
+// Kapok.config.shouldShowLog = false;
+Kapok.config.shouldShowLog = true;
 
 test('should receive message on `out:data` event', (done) => {
 	const input = 'hello world';
@@ -151,6 +152,14 @@ test('`assertUntil()`', (done) => {
 	;
 });
 
+test('done with promise', () => {
+	const code = `
+		setTimeout(() => console.log('async'), 1000);
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	return kapok.assert('async').done();
+});
+
 test('`done()` should emit once', (done) => {
 	const cb = jest.fn();
 	const code = `
@@ -159,11 +168,9 @@ test('`done()` should emit once', (done) => {
 		console.log('!');
 	`;
 	const kapok = new Kapok('node', ['-e', code]);
-	kapok
-		.done(cb)
-		.done(cb)
-		.done(cb)
-	;
+	kapok.done(cb);
+	kapok.done(cb);
+	kapok.done(cb);
 	setTimeout(() => {
 		try {
 			expect(cb.mock.calls.length).toBe(1);

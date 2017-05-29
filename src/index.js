@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import EventEmitter from 'events';
 import stripAnsi from 'strip-ansi';
 import chalk from 'chalk';
+import callMaybe from 'call-me-maybe';
 import { isFunction, isRegExp, isString, isNumber, defaults, noop, once } from 'lodash';
 
 const test = (condition, message, dataset) => {
@@ -249,15 +250,25 @@ export default class Kapok extends EventEmitter {
 		return this.assert(condition, options);
 	}
 
-	done(callback = noop) {
-		this._done = once(() => {
-			const { errors } = this;
-			if (errors.length) {
-				callback(errors);
-			}
-			else { callback(); }
-		});
-		return this;
+	done(callback) {
+		return callMaybe(callback, new Promise((resolve, reject) => {
+			this._done = once(() => {
+				const { errors } = this;
+				if (errors.length) {
+					reject(errors);
+				}
+				else { resolve(); }
+			});
+		}));
+
+		// this._done = once(() => {
+		// 	const { errors } = this;
+		// 	if (errors.length) {
+		// 		callback(errors);
+		// 	}
+		// 	else { callback(); }
+		// });
+		// return this;
 	}
 
 	_next() {
