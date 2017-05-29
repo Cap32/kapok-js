@@ -149,7 +149,7 @@ export default class Kapok extends EventEmitter {
 			}
 		};
 
-		this._fns.push(() => {
+		this._fns.push(async () => {
 			const { message, dataset } = this;
 			const matched = test(condition, message, dataset);
 			if (!matched) {
@@ -158,7 +158,7 @@ export default class Kapok extends EventEmitter {
 			else if (shouldShowLog) {
 				console.log(`${chalk.green('✓')} ${chalk.gray(message)}`);
 			}
-			action(message, dataset);
+			await action(message, dataset);
 			dataset.length = 0;
 		});
 		return this;
@@ -177,7 +177,7 @@ export default class Kapok extends EventEmitter {
 			condition = () => this.dataset.length === line;
 		}
 
-		const group = () => {
+		const group = async () => {
 			const { dataset } = this;
 			const isCompleted = test(condition, this.message, dataset);
 
@@ -195,7 +195,7 @@ export default class Kapok extends EventEmitter {
 				}
 
 				if (isFunction(action)) {
-					action(this.message, dataset);
+					await action(this.message, dataset);
 				}
 				this._next();
 			}
@@ -260,20 +260,11 @@ export default class Kapok extends EventEmitter {
 				else { resolve(); }
 			});
 		}));
-
-		// this._done = once(() => {
-		// 	const { errors } = this;
-		// 	if (errors.length) {
-		// 		callback(errors);
-		// 	}
-		// 	else { callback(); }
-		// });
-		// return this;
 	}
 
-	_next() {
+	async _next() {
 		const fn = this._fns.shift();
-		if (isFunction(fn)) { fn(); }
+		if (isFunction(fn)) { await fn(); }
 
 		if (!this._fns.length && isFunction(this._done)) {
 			this._done();
