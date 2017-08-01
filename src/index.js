@@ -12,6 +12,8 @@ const test = (condition, message, dataset) => {
 	return condition === message;
 };
 
+const log = (...args) => process.stdout.write(args.concat('\n').join(' '));
+
 const deprecated = function deprecated(oldMethod, newMethod) {
 	if (!deprecated[oldMethod]) { return; }
 	console.warn(
@@ -144,7 +146,7 @@ export default class Kapok extends EventEmitter {
 
 			if (shouldThrowError) { throw error; }
 			else {
-				console.log(errorMessage);
+				log(errorMessage);
 				this.errors.push(error);
 			}
 		};
@@ -156,7 +158,7 @@ export default class Kapok extends EventEmitter {
 				throwError(new Error(message));
 			}
 			else if (shouldShowLog) {
-				console.log(`${chalk.green('✓')} ${chalk.gray(message)}`);
+				log(`${chalk.green('✓')} ${chalk.gray(message)}`);
 			}
 			await action(message, dataset);
 			dataset.length = 0;
@@ -183,7 +185,7 @@ export default class Kapok extends EventEmitter {
 
 			if (getLogMessage) {
 				const logMessage = getLogMessage(this.message, isCompleted);
-				shouldShowLog && logMessage && console.log(logMessage);
+				shouldShowLog && logMessage && log(logMessage);
 			}
 
 			if (isCompleted) {
@@ -222,7 +224,7 @@ export default class Kapok extends EventEmitter {
 	}
 
 	ignoreUntil(condition, options) {
-		const getLogMessage = (message) => chalk.gray(`- ${message}`);
+		const getLogMessage = (message) => chalk.gray(`○ ${message}`);
 		this._group(condition, {
 			...options,
 			join: false,
