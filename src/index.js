@@ -5,6 +5,7 @@ import stripAnsi from 'strip-ansi';
 import chalk from 'chalk';
 import callMaybe from 'call-me-maybe';
 import { isFunction, isRegExp, isString, isNumber, defaults, noop, once } from 'lodash';
+import figures from 'figures';
 
 const test = (condition, message, dataset) => {
 	if (isFunction(condition)) { return condition(message, dataset); }
@@ -36,6 +37,11 @@ export default class Kapok extends EventEmitter {
 		this.message = '';
 		this.dataset = [];
 		this.errors = [];
+
+		Kapok.config.shouldShowLog && log(
+			chalk.dim.bold(figures.pointerSmall),
+			chalk.gray(JSON.stringify([command, ...args].join(' ')).replace(/^"|"$/g, '')),
+		);
 
 		const child = spawn(command, args, {
 			...options,
@@ -130,7 +136,7 @@ export default class Kapok extends EventEmitter {
 			}
 
 			if (!isString(errorMessage)) {
-				errorMessage = chalk.red('AssertionError: ');
+				errorMessage = chalk.red(`${figures.cross} `);
 				if (isString(condition)) {
 
 					// eslint-disable-next-line
@@ -158,7 +164,7 @@ export default class Kapok extends EventEmitter {
 				throwError(new Error(message));
 			}
 			else if (shouldShowLog) {
-				log(`${chalk.green('✓')} ${chalk.gray(message)}`);
+				log(`${chalk.green(figures.tick)} ${chalk.gray(message)}`);
 			}
 			await action(message, dataset);
 			dataset.length = 0;
@@ -224,7 +230,7 @@ export default class Kapok extends EventEmitter {
 	}
 
 	ignoreUntil(condition, options) {
-		const getLogMessage = (message) => chalk.gray(`○ ${message}`);
+		const getLogMessage = (message) => chalk.gray(`${figures.circleDotted} ${message}`);
 		this._group(condition, {
 			...options,
 			join: false,

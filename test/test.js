@@ -2,8 +2,8 @@
 import Kapok from '../src';
 import { isEqual } from 'lodash';
 
-Kapok.config.shouldShowLog = false;
-// Kapok.config.shouldShowLog = true;
+// Kapok.config.shouldShowLog = false;
+Kapok.config.shouldShowLog = true;
 
 test('should receive message on `out:data` event', (done) => {
 	const input = 'hello world';
