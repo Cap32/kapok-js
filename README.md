@@ -5,12 +5,42 @@
 Javascript Testing utilities for CLI
 
 
+## Table of Contents
+
+<!-- MarkdownTOC autolink="true" bracket="round" -->
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [API](#api)
+  - [Kapok.config](#kapokconfig)
+  - [Kapok#constructor\(command\[, args\]\[, options\]\)](#kapokconstructorcommand-args-options)
+  - [Kapok#assert\(condition\[, options\]\)](#kapokassertcondition-options)
+  - [Kapok#joinUntil\(condition\[, options\]\)](#kapokjoinuntilcondition-options)
+  - [Kapok#until\(condition\[, options\]\)](#kapokuntilcondition-options)
+  - [Kapok#assertUntil\(condition\[, options\]\)](#kapokassertuntilcondition-options)
+  - [Kapok#ignoreUntil\(condition\[, options\]\)](#kapokignoreuntilcondition-options)
+  - [Kapok#done\(\[callback\]\)](#kapokdonecallback)
+  - [Event: 'data'](#event-data)
+  - [Event: 'out:data'](#event-outdata)
+  - [Event: 'err:data'](#event-errdata)
+  - [Event: 'line'](#event-line)
+  - [Event: 'out:line'](#event-outline)
+  - [Event: 'err:line'](#event-errline)
+  - [Event: 'error'](#event-error)
+  - [Event: 'exit'](#event-exit)
+- [License](#license)
+
+<!-- /MarkdownTOC -->
+
+
+<a name="installation"></a>
 ## Installation
 
 ```bash
 yarn add -D kapok-js
 ```
 
+<a name="usage"></a>
 ## Usage
 
 ```js
@@ -57,8 +87,10 @@ kapok
 ```
 
 
+<a name="api"></a>
 ## API
 
+<a name="kapokconfig"></a>
 #### Kapok.config
 
 - `config.shouldShowLog` (Boolean): Show log message or not. Defaults to `true`
@@ -68,6 +100,7 @@ A global config to all `Kapok` instances. Can be override.
 
 ---
 
+<a name="kapokconstructorcommand-args-options"></a>
 #### Kapok#constructor(command[, args][, options])
 
 - `command` (String): The command to run
@@ -81,6 +114,7 @@ Spawns a new process using the given `command`, just like `child_process.spawn()
 
 ---
 
+<a name="kapokassertcondition-options"></a>
 #### Kapok#assert(condition[, options])
 
 - `condition` (String|RegExp|Function): Testing `message`, throw an error if returns `false`. The `message` is the each line data of process outputs
@@ -112,6 +146,7 @@ kapok
 
 ---
 
+<a name="kapokjoinuntilcondition-options"></a>
 #### Kapok#joinUntil(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to stop grouping lines
@@ -152,6 +187,7 @@ kapok
 
 ---
 
+<a name="kapokuntilcondition-options"></a>
 #### Kapok#until(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to start to assert next line
@@ -175,6 +211,7 @@ kapok.until(/^[^#]/).assert('c').done(); /* lines before 'c' would be ignored */
 
 ---
 
+<a name="kapokassertuntilcondition-options"></a>
 #### Kapok#assertUntil(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to start to assert
@@ -198,6 +235,7 @@ kapok.assertUntil('c').done(); /* lines before 'c' would be ignored */
 
 ---
 
+<a name="kapokignoreuntilcondition-options"></a>
 #### Kapok#ignoreUntil(condition[, options])
 
 - `condition` (Number|String|RegExp|Function): Decide when to stop ignoring
@@ -221,6 +259,7 @@ kapok.ignoreUntil(/^#/).assert('c'); /* lines before 'c' would be ignored */
 
 ---
 
+<a name="kapokdonecallback"></a>
 #### Kapok#done([callback])
 
 - `callback` (Function): Provide a callback function. If there's no error, the first argument is `undefined`, otherwise, the first argument is an array of errors
@@ -240,6 +279,7 @@ test('echo', async () => kapok.assert('hello').done());
 
 ---
 
+<a name="event-data"></a>
 #### Event: 'data'
 
 - `data` (Object)
@@ -249,6 +289,7 @@ test('echo', async () => kapok.assert('hello').done());
 The `data` event will emitted when the `stdout` or `stderr` output data.
 
 
+<a name="event-outdata"></a>
 #### Event: 'out:data'
 
 - `data` (Object)
@@ -258,6 +299,7 @@ The `data` event will emitted when the `stdout` or `stderr` output data.
 The `out:data` event will emitted when the `stdout` output data.
 
 
+<a name="event-errdata"></a>
 #### Event: 'err:data'
 
 - `data` (Object)
@@ -267,6 +309,7 @@ The `out:data` event will emitted when the `stdout` output data.
 The `err:data` event will emitted when the `stderr` output data.
 
 
+<a name="event-line"></a>
 #### Event: 'line'
 
 - `line` (Object)
@@ -276,6 +319,7 @@ The `err:data` event will emitted when the `stderr` output data.
 The `line` event will emitted when the `stdout` or `stderr` output each lines.
 
 
+<a name="event-outline"></a>
 #### Event: 'out:line'
 
 - `line` (Object)
@@ -285,6 +329,7 @@ The `line` event will emitted when the `stdout` or `stderr` output each lines.
 The `out:line` event will emitted when the `stdout` output each lines.
 
 
+<a name="event-errline"></a>
 #### Event: 'err:line'
 
 - `line` (Object)
@@ -294,16 +339,19 @@ The `out:line` event will emitted when the `stdout` output each lines.
 The `err:line` event will emitted when the `stderr` output each lines.
 
 
+<a name="event-error"></a>
 #### Event: 'error'
 
 The same with [child_process error event](https://nodejs.org/api/child_process.html#child_process_event_error)
 
 
+<a name="event-exit"></a>
 #### Event: 'exit'
 
 The same with [child_process exit event](https://nodejs.org/api/child_process.html#child_process_event_exit)
 
 
+<a name="license"></a>
 ## License
 
 MIT
