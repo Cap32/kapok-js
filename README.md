@@ -120,9 +120,9 @@ Spawns a new process using the given `command`, just like `child_process.spawn()
 - `condition` (String|RegExp|Function): Testing `message`, throw an error if returns `false`. The `message` is the each line data of process outputs
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
-  + If is a `Function`, it will return `condition(message, dataset)`
+  + If is a `Function`, it will return `condition(message, lines)`
     * `message` (String): Data message of each line
-    * `dataset` (Array): An array of data. A data includes `message` and `ansiMessage`. `ansiMessage` is like `message`, but includes some ANSI code.
+    * `lines` (Array): An array of data. A data includes `message` and `ansiMessage`. `ansiMessage` is like `message`, but includes some ANSI code.
 - `options` (String|Object)
   + `errorMessage` (String): If `condition` returns `false`, it will throw a new error with the message. If the `options` is a `String`, it will become a short hand of `options.errorMessage`
   + `action` (Function): An addition function to do something while `assert` function fires. Support returning a promise for async action
@@ -153,11 +153,11 @@ kapok
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
-  + If is a `Function`, it will return `condition(message, dataset)`
+  + If is a `Function`, it will return `condition(message, lines)`
 - `options` (Object)
   + `join` (String|Function|false): Join the grouped `messages` into a string
     * If is a `String`, it will join messages by `messages.join(joinString)`
-    * If is a `Function`, it will join messages by `join(dataset)`
+    * If is a `Function`, it will join messages by `join(lines)`
     * If is `false`, it won't join messages
     * By default, it is an empty string
   + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
@@ -194,7 +194,7 @@ kapok
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
-  + If is a `Function`, it will return `condition(message, dataset)`
+  + If is a `Function`, it will return `condition(message, lines)`
 - `options` (Object)
   + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
@@ -218,7 +218,7 @@ kapok.until(/^[^#]/).assert('c').done(); /* lines before 'c' would be ignored */
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
-  + If is a `Function`, it will return `condition(message, dataset)`
+  + If is a `Function`, it will return `condition(message, lines)`
 - `options` (Object)
   + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`
@@ -242,7 +242,7 @@ kapok.assertUntil('c').done(); /* lines before 'c' would be ignored */
   + If is a `Number`, it will return `true` if the delta line number is equal with `condition` number
   + If is a `String`, it will return `message === condition`
   + If is a `RegExp`, it will return `condition.test(message)`
-  + If is a `Function`, it will return `condition(message, dataset)`
+  + If is a `Function`, it will return `condition(message, lines)`
 - `options` (Object)
   + `action` (Function): An addition function to do something while condition matched. Support returning a promise for async action
   + `shouldShowLog` (Boolean): Show log message or not. Defaults to `Kapok.config.shouldShowLog`

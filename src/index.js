@@ -7,8 +7,8 @@ import callMaybe from 'call-me-maybe';
 import { isFunction, isRegExp, isString, isNumber, defaults, noop, once } from 'lodash';
 import figures from 'figures';
 
-const test = (condition, message, dataset) => {
-	if (isFunction(condition)) { return condition(message, dataset); }
+const test = (condition, message, lines) => {
+	if (isFunction(condition)) { return condition(message, lines); }
 	else if (isRegExp(condition)) { return condition.test(message); }
 	return condition === message;
 };
@@ -35,7 +35,7 @@ export default class Kapok extends EventEmitter {
 
 		this._fns = [];
 		this.message = '';
-		this.dataset = [];
+		this.lines = [];
 		this.errors = [];
 		this._stash = [];
 		this._isPending = false;
@@ -159,16 +159,16 @@ export default class Kapok extends EventEmitter {
 		};
 
 		this._fns.push(async () => {
-			const { message, dataset } = this;
-			const matched = test(condition, message, dataset);
+			const { message, lines } = this;
+			const matched = test(condition, message, lines);
 			if (!matched) {
 				throwError(new Error(message));
 			}
 			else if (shouldShowLog) {
 				log(`${chalk.green(figures.tick)} ${chalk.gray(message)}`);
 			}
-			await action(message, dataset);
-			dataset.length = 0;
+			await action(message, lines);
+			lines.length = 0;
 		});
 		return this;
 	}
@@ -183,12 +183,12 @@ export default class Kapok extends EventEmitter {
 
 		if (isNumber(condition)) {
 			const line = condition;
-			condition = () => this.dataset.length === line;
+			condition = () => this.lines.length === line;
 		}
 
 		const group = async () => {
-			const { dataset } = this;
-			const isCompleted = test(condition, this.message, dataset);
+			const { lines } = this;
+			const isCompleted = test(condition, this.message, lines);
 
 			if (getLogMessage) {
 				const logMessage = getLogMessage(this.message, isCompleted);
@@ -197,14 +197,14 @@ export default class Kapok extends EventEmitter {
 
 			if (isCompleted) {
 				if (isFunction(join)) {
-					this.message = join(dataset);
+					this.message = join(lines);
 				}
 				else if (join !== false) {
-					this.message = dataset.map(({ message }) => message).join(join);
+					this.message = lines.map(({ message }) => message).join(join);
 				}
 
 				if (isFunction(action)) {
-					await action(this.message, dataset);
+					await action(this.message, lines);
 				}
 
 				this._stash.push(this.message);
@@ -254,7 +254,7 @@ export default class Kapok extends EventEmitter {
 			join: false,
 			getLogMessage,
 		});
-		this.dataset.length = 0;
+		this.lines.length = 0;
 		return this;
 	}
 
@@ -287,7 +287,7 @@ export default class Kapok extends EventEmitter {
 		const lineOrMessage = this._stash.shift();
 		const line = !isString(lineOrMessage) && lineOrMessage;
 		this.message = line ? line.message : lineOrMessage;
-		if (line) { this.dataset.push(line); }
+		if (line) { this.lines.push(line); }
 
 		const fn = this._fns.shift();
 
