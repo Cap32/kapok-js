@@ -37,6 +37,8 @@ export default class Kapok extends EventEmitter {
 		this.message = '';
 		this.dataset = [];
 		this.errors = [];
+		this._stash = [];
+		this._isPending = false;
 
 		Kapok.config.shouldShowLog && log(
 			chalk.dim.bold(figures.pointerSmall),
@@ -78,9 +80,8 @@ export default class Kapok extends EventEmitter {
 						exit: ::this.exit,
 					});
 
-					this.message = line.message;
-					this.dataset.push(line);
-					this._next();
+					this._stash.push(line);
+					this._requestNext();
 				})
 			;
 		};
@@ -205,13 +206,15 @@ export default class Kapok extends EventEmitter {
 				if (isFunction(action)) {
 					await action(this.message, dataset);
 				}
-				await this._next();
+
+				this._stash.push(this.message);
 			}
 			else {
 				this._fns.unshift(group);
 			}
 		};
 		this._fns.push(group);
+		this._requestNext();
 		return this;
 	}
 
@@ -230,7 +233,10 @@ export default class Kapok extends EventEmitter {
 	}
 
 	ignoreUntil(condition, options) {
-		const getLogMessage = (message) => chalk.gray(`${figures.circleDotted} ${message}`);
+		const getLogMessage = (message) => {
+			chalk.gray(`${figures.circleDotted} ${message}`);
+		};
+
 		this._group(condition, {
 			...options,
 			join: false,
@@ -270,18 +276,37 @@ export default class Kapok extends EventEmitter {
 		}));
 	}
 
+	_requestNext() {
+		if (this._isPending) { return; }
+		this._next();
+	}
+
 	async _next() {
+		if (!this._stash.length) { return; }
+
+		const lineOrMessage = this._stash.shift();
+		const line = !isString(lineOrMessage) && lineOrMessage;
+		this.message = line ? line.message : lineOrMessage;
+		if (line) { this.dataset.push(line); }
+
 		const fn = this._fns.shift();
 
+		this._isPending = true;
 		try {
-			if (isFunction(fn)) { await fn(); }
+			if (isFunction(fn)) {
+				await fn();
+			}
 		}
 		catch (err) {
 			this.errors.push(err);
 		}
+		this._isPending = false;
 
-		if (!this._fns.length && isFunction(this._done)) {
-			this._done();
+		if (!this._fns.length) {
+			isFunction(this._done) && this._done();
+		}
+		else {
+			await this._next();
 		}
 	}
 

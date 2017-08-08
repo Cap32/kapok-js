@@ -1,6 +1,7 @@
 
 import Kapok from '../src';
 import { isEqual } from 'lodash';
+import delay from 'delay';
 
 // Kapok.config.shouldShowLog = false;
 Kapok.config.shouldShowLog = true;
@@ -70,12 +71,13 @@ test('action', async () => {
 });
 
 test('async action', async () => {
-	const delay = 1000;
+	const ms = 1000;
 	let t0 = 0;
 	let t1 = 0;
 	const code = `
 		console.log('hello');
 		console.log('world');
+		console.log('!');
 	`;
 	await new Kapok('node', ['-e', code])
 		.assert('hello', {
@@ -85,17 +87,14 @@ test('async action', async () => {
 		})
 		.assert('world', {
 			async action() {
-				return new Promise((resolve) => {
-					setTimeout(() => {
-						t1 = Date.now();
-						resolve();
-					}, delay);
-				});
+				await delay(ms);
+				t1 = Date.now();
 			}
 		})
+		.assert('!')
 		.done()
 	;
-	expect(t1 - t0 >= delay).toBe(true);
+	expect(t1 - t0 >= ms).toBe(true);
 });
 
 test('`groupUntil()`', () => {
@@ -220,7 +219,7 @@ test('`done()` should emit once', (done) => {
 	}, 2000);
 });
 
-test('should throw Error if assert fails', (done) => {
+test('should throw error with callback if assert fails', (done) => {
 	const kapok = new Kapok('echo', ['a']);
 	kapok
 		.assert('b')
@@ -229,4 +228,22 @@ test('should throw Error if assert fails', (done) => {
 			done();
 		})
 	;
+});
+
+test('should throw error with async if assert fails', async () => {
+	await expect(
+		new Kapok('echo', ['a']).assert('b').done()
+	).rejects.toBeDefined();
+});
+
+test('should throw error if action throws error', async () => {
+	await expect(new Kapok('echo', ['a\nb'])
+		.assert('a', {
+			async action() {
+				await delay(1000);
+				throw new Error('action error');
+			}
+		})
+		.done()
+	).rejects.toBeDefined();
 });
