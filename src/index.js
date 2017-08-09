@@ -265,9 +265,9 @@ export default class Kapok extends EventEmitter {
 	}
 
 	ignoreUntil(condition, options) {
-		const getLogMessage = (message) => {
-			chalk.gray(`${figures.circleDotted} ${message}`);
-		};
+		const getLogMessage = (message) =>
+			chalk.gray(`${figures.circleDotted} ${message}`)
+		;
 
 		this._group(condition, {
 			...options,
