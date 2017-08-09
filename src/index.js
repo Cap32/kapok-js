@@ -24,6 +24,34 @@ const deprecated = function deprecated(oldMethod, newMethod) {
 	deprecated[oldMethod] = true;
 };
 
+class Stash {
+	constructor() {
+		this._list = [];
+	}
+
+	unshift(line) {
+		this._list.unshift(line);
+		console.log('stash UNSHIFT', line, '->', this._list);
+	}
+
+	push(line) {
+		this._list.push(line);
+		console.log('stash PUSH', line, '->', this._list);
+	}
+
+	shift() {
+		const line = this._list.shift();
+
+		console.log('stash SHIFT', line, '<-', this._list);
+
+		return line;
+	}
+
+	get length() {
+		return this._list.length;
+	}
+}
+
 export default class Kapok extends EventEmitter {
 	static config = {
 		shouldShowLog: true,
@@ -37,7 +65,8 @@ export default class Kapok extends EventEmitter {
 		this.message = '';
 		this.lines = [];
 		this.errors = [];
-		this._stash = [];
+		// this._stash = new Stash();
+		this._stash = new Array();
 		this._isPending = false;
 
 		Kapok.config.shouldShowLog && log(
@@ -161,6 +190,7 @@ export default class Kapok extends EventEmitter {
 		this._fns.push(async () => {
 			const { message, lines } = this;
 			const matched = test(condition, message, lines);
+
 			if (!matched) {
 				throwError(new Error(message));
 			}
@@ -207,11 +237,13 @@ export default class Kapok extends EventEmitter {
 					await action(this.message, lines);
 				}
 
-				this._stash.push(this.message);
+				this._stash.unshift(this.message);
 			}
 			else {
 				this._fns.unshift(group);
 			}
+
+			this._requestNext();
 		};
 		this._fns.push(group);
 		this._requestNext();
