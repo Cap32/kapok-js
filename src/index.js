@@ -103,6 +103,7 @@ export default class Kapok extends EventEmitter {
 		this.stdin = child.stdin;
 		this.stdout = child.stdout;
 		this.stderr = child.stderr;
+		this.kill = ::this.exit;
 	}
 
 	write(...args) {
@@ -318,7 +319,13 @@ export default class Kapok extends EventEmitter {
 			done = signal;
 			signal = 'SIGTERM';
 		}
+
 		this.child.kill(signal);
-		this.child.once('close', done);
+
+		return callMaybe(done, new Promise((resolve, reject) => {
+			this.child.once('close', (sig) => {
+				resolve(sig);
+			});
+		}));
 	}
 }

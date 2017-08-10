@@ -20,6 +20,7 @@ Javascript Testing utilities for CLI
   - [Kapok#assertUntil\(condition\[, options\]\)](#kapokassertuntilcondition-options)
   - [Kapok#ignoreUntil\(condition\[, options\]\)](#kapokignoreuntilcondition-options)
   - [Kapok#done\(\[callback\]\)](#kapokdonecallback)
+  - [Kapok#kill\(\[signal, callback\]\)](#kapokkillsignal-callback)
   - [Event: 'data'](#event-data)
   - [Event: 'out:data'](#event-outdata)
   - [Event: 'err:data'](#event-errdata)
@@ -276,6 +277,16 @@ const kapok = new Kapok('echo', ['hello']);
 
 test('echo', async () => kapok.assert('hello').done());
 ```
+
+---
+
+<a name="kapokkillsignal-callback"></a>
+#### Kapok#kill([signal, callback])
+
+- `callback` (Function): Provide a callback function.
+- Returns (Promise)
+
+Killing kapok process. Could provide a callback function or return a promise for async function.
 
 ---
 

@@ -247,3 +247,10 @@ test('should throw error if action throws error', async () => {
 		.done()
 	).rejects.toBeDefined();
 });
+
+test('should `kill()` work', async () => {
+	const kapok = new Kapok('node', ['-e', 'setTimeout(() => {}, 1000)']);
+	kapok.assert('a');
+	await delay(500);
+	await kapok.kill();
+});
