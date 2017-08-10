@@ -30,7 +30,7 @@ export default class Kapok extends EventEmitter {
 		shouldThrowError: false,
 	};
 
-	constructor(command, args, options) {
+	constructor(command, args = [], options) {
 		super();
 
 		this._fns = [];
