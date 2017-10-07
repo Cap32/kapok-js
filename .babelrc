@@ -5,6 +5,10 @@
 			"targets": {
 				"node": 4,
 			},
+			"exclude": [
+				"transform-regenerator",
+			],
+			// "debug": true,
 		}],
 	],
 	"plugins": [
