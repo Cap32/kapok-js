@@ -3,7 +3,7 @@
 		"stage-0",
 		["env", {
 			"targets": {
-				"node": "current",
+				"node": 4,
 			},
 		}],
 	],
