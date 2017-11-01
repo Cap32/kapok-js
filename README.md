@@ -13,7 +13,9 @@ Javascript Testing utilities for CLI
 - [Usage](#usage)
 - [API](#api)
   - [Kapok.config](#kapokconfig)
+  - [Kapok.create\(command\[, args\]\[, options\]\)](#kapokcreatecommand-args-options)
   - [Kapok#constructor\(command\[, args\]\[, options\]\)](#kapokconstructorcommand-args-options)
+  - [Kapok#constructor\(command\[, args\]\[, options\]\)](#kapokconstructorcommand-args-options-1)
   - [Kapok#assert\(condition\[, options\]\)](#kapokassertcondition-options)
   - [Kapok#joinUntil\(condition\[, options\]\)](#kapokjoinuntilcondition-options)
   - [Kapok#until\(condition\[, options\]\)](#kapokuntilcondition-options)
@@ -102,6 +104,10 @@ A global config to all `Kapok` instances. Can be override.
 
 ---
 
+
+<a name="kapokcreatecommand-args-options"></a>
+#### Kapok.create(command[, args][, options])
+
 <a name="kapokconstructorcommand-args-options"></a>
 #### Kapok#constructor(command[, args][, options])
 
@@ -113,6 +119,15 @@ A global config to all `Kapok` instances. Can be override.
 Spawns a new process using the given `command`, just like `child_process.spawn()`, but returns a `Kapok` instance.
 
 `Kapok` inherits [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter)
+
+
+---
+
+<a name="kapokconstructorcommand-args-options-1"></a>
+#### Kapok#constructor(command[, args][, options])
+
+The same with `Kapok.create()`
+
 
 ---
 
