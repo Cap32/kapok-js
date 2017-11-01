@@ -29,6 +29,7 @@ Javascript Testing utilities for CLI
   - [Event: 'err:line'](#event-errline)
   - [Event: 'error'](#event-error)
   - [Event: 'exit'](#event-exit)
+  - [Event: 'signal:exit'](#event-signalexit)
 - [License](#license)
 
 <!-- /MarkdownTOC -->
@@ -360,6 +361,15 @@ The same with [child_process error event](https://nodejs.org/api/child_process.h
 #### Event: 'exit'
 
 The same with [child_process exit event](https://nodejs.org/api/child_process.html#child_process_event_exit)
+
+
+<a name="event-signalexit"></a>
+#### Event: 'signal:exit'
+
+- `code` (String): Exit code
+- `signal` (String): Signal
+
+The `signal:exit` event will emitted when receive `SIG*` exit event.
 
 
 <a name="license"></a>
