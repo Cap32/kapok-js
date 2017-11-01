@@ -101,6 +101,7 @@ kapok
 
 - `config.shouldShowLog` \<Boolean\>: Show log message or not. Defaults to `true`
 - `config.shouldThrowError` \<Boolean\>: Throw a new Error or not when assert fails. Defaults to `false`
+- `shouldKillOnDone` \<Boolean\>: Kill kapok proceee on `done`. Defaults to `false`
 
 A global config to all `Kapok` instances. Can be override.
 
