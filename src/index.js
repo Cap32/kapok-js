@@ -32,6 +32,7 @@ export default class Kapok extends EventEmitter {
 	static config = {
 		shouldShowLog: true,
 		shouldThrowError: false,
+		shouldKillOnDone: false,
 	};
 
 	static start(...args) {
@@ -295,9 +296,11 @@ export default class Kapok extends EventEmitter {
 
 	done(callback) {
 		return callMaybe(callback, new Promise((resolve, reject) => {
-			this._done = once(() => {
+			this._done = once(async () => {
 				const { errors } = this;
-				this.kill().catch(noop);
+				if (Kapok.config.shouldKillOnDone) {
+					await this.kill().catch(noop);
+				}
 				if (errors.length) {
 					reject(errors);
 				}
