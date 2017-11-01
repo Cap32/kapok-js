@@ -297,11 +297,11 @@ export default class Kapok extends EventEmitter {
 		return callMaybe(callback, new Promise((resolve, reject) => {
 			this._done = once(() => {
 				const { errors } = this;
+				this.kill().catch(noop);
 				if (errors.length) {
 					reject(errors);
 				}
 				else { resolve(); }
-				this.kill().catch(noop);
 			});
 		}));
 	}
@@ -353,6 +353,6 @@ export default class Kapok extends EventEmitter {
 
 		kapoks.delete(this);
 
-		return callMaybe(callback, fkill(this.child.pid));
+		return callMaybe(callback, fkill(this.child.pid).catch(noop));
 	}
 }
