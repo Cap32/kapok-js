@@ -301,6 +301,7 @@ export default class Kapok extends EventEmitter {
 				if (Kapok.config.shouldKillOnDone) {
 					await this.kill().catch(noop);
 				}
+				kapoks.delete(this);
 				if (errors.length) {
 					reject(errors);
 				}
