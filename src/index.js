@@ -6,6 +6,8 @@ import chalk from 'chalk';
 import callMaybe from 'call-me-maybe';
 import { isFunction, isRegExp, isString, isNumber, defaults, noop, once } from 'lodash';
 import figures from 'figures';
+import onExit from 'signal-exit';
+import fkill from 'fkill';
 
 const test = (condition, message, lines) => {
 	if (isFunction(condition)) { return condition(message, lines); }
@@ -39,6 +41,7 @@ export default class Kapok extends EventEmitter {
 		this.errors = [];
 		this._stash = [];
 		this._isPending = false;
+		this._done = noop;
 
 		Kapok.config.shouldShowLog && log(
 			chalk.dim.bold(figures.pointerSmall),
@@ -104,6 +107,12 @@ export default class Kapok extends EventEmitter {
 		this.stdout = child.stdout;
 		this.stderr = child.stderr;
 		this.kill = ::this.exit;
+
+		onExit((code, signal) => {
+			this.errors.push(new Error(signal));
+			this.emit('signal:exit', code, signal);
+			this._done();
+		});
 	}
 
 	write(...args) {
@@ -169,7 +178,7 @@ export default class Kapok extends EventEmitter {
 			else if (shouldShowLog) {
 				log(`${chalk.green(figures.tick)} ${chalk.gray(message)}`);
 			}
-			await action(message, lines);
+			await action(message, lines, this);
 			lines.length = 0;
 		});
 		return this;
@@ -206,7 +215,7 @@ export default class Kapok extends EventEmitter {
 				}
 
 				if (isFunction(action)) {
-					await action(this.message, lines);
+					await action(this.message, lines, this);
 				}
 
 				this._stash.unshift(this.message);
@@ -276,6 +285,7 @@ export default class Kapok extends EventEmitter {
 					reject(errors);
 				}
 				else { resolve(); }
+				this.kill().catch(noop);
 			});
 		}));
 	}
@@ -307,25 +317,24 @@ export default class Kapok extends EventEmitter {
 		this._isPending = false;
 
 		if (!this._fns.length) {
-			isFunction(this._done) && this._done();
+			this._done();
 		}
 		else {
 			await this._next();
 		}
 	}
 
-	exit(signal, done = noop) {
-		if (isFunction(signal)) {
-			done = signal;
-			signal = 'SIGTERM';
+	exit(signal, callback) {
+		if (isString(signal)) {
+			console.warn(
+				'[KAPOK]: exit(signal) has been deprecated, please use exit() instead',
+			);
 		}
 
-		this.child.kill(signal);
+		if (isFunction(signal)) {
+			callback = signal;
+		}
 
-		return callMaybe(done, new Promise((resolve, reject) => {
-			this.child.once('close', (sig) => {
-				resolve(sig);
-			});
-		}));
+		return callMaybe(callback, fkill(this.child.pid));
 	}
 }
