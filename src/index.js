@@ -26,6 +26,8 @@ const deprecated = function deprecated(oldMethod, newMethod) {
 	deprecated[oldMethod] = true;
 };
 
+const kapoks = new Set();
+
 export default class Kapok extends EventEmitter {
 	static config = {
 		shouldShowLog: true,
@@ -34,6 +36,14 @@ export default class Kapok extends EventEmitter {
 
 	static start(...args) {
 		return new Kapok(...args);
+	}
+
+	static async killAll() {
+		return Promise.all([...kapoks].map((kapok) => kapok.kill()));
+	}
+
+	static get size() {
+		return kapoks.size;
 	}
 
 	constructor(command, args = [], options) {
@@ -117,6 +127,8 @@ export default class Kapok extends EventEmitter {
 			this.emit('signal:exit', code, signal);
 			this._done();
 		});
+
+		kapoks.add(this);
 	}
 
 	write(...args) {
@@ -338,6 +350,8 @@ export default class Kapok extends EventEmitter {
 		if (isFunction(signal)) {
 			callback = signal;
 		}
+
+		kapoks.delete(this);
 
 		return callMaybe(callback, fkill(this.child.pid));
 	}
