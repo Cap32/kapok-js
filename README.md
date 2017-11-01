@@ -13,9 +13,8 @@ Javascript Testing utilities for CLI
 - [Usage](#usage)
 - [API](#api)
   - [Kapok.config](#kapokconfig)
-  - [Kapok.create\(command\[, args\]\[, options\]\)](#kapokcreatecommand-args-options)
+  - [Kapok.start\(command\[, args\]\[, options\]\)](#kapokstartcommand-args-options)
   - [Kapok#constructor\(command\[, args\]\[, options\]\)](#kapokconstructorcommand-args-options)
-  - [Kapok#constructor\(command\[, args\]\[, options\]\)](#kapokconstructorcommand-args-options-1)
   - [Kapok#assert\(condition\[, options\]\)](#kapokassertcondition-options)
   - [Kapok#joinUntil\(condition\[, options\]\)](#kapokjoinuntilcondition-options)
   - [Kapok#until\(condition\[, options\]\)](#kapokuntilcondition-options)
@@ -105,11 +104,8 @@ A global config to all `Kapok` instances. Can be override.
 ---
 
 
-<a name="kapokcreatecommand-args-options"></a>
-#### Kapok.create(command[, args][, options])
-
-<a name="kapokconstructorcommand-args-options"></a>
-#### Kapok#constructor(command[, args][, options])
+<a name="kapokstartcommand-args-options"></a>
+#### Kapok.start(command[, args][, options])
 
 - `command` (String): The command to run
 - `args` (Array): List of string arguments
@@ -123,10 +119,10 @@ Spawns a new process using the given `command`, just like `child_process.spawn()
 
 ---
 
-<a name="kapokconstructorcommand-args-options-1"></a>
+<a name="kapokconstructorcommand-args-options"></a>
 #### Kapok#constructor(command[, args][, options])
 
-The same with `Kapok.create()`
+The same with `Kapok.start()`
 
 
 ---
