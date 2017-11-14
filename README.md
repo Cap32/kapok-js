@@ -23,6 +23,7 @@ Javascript Testing utilities for CLI
   - [Kapok#assertUntil\(condition\[, options\]\)](#kapokassertuntilcondition-options)
   - [Kapok#ignoreUntil\(condition\[, options\]\)](#kapokignoreuntilcondition-options)
   - [Kapok#done\(\[callback\]\)](#kapokdonecallback)
+  - [Kapok#doneAndKill\(\[callback\]\)](#kapokdoneandkillcallback)
   - [Kapok#kill\(\[signal, callback\]\)](#kapokkillsignal-callback)
   - [Event: 'data'](#event-data)
   - [Event: 'out:data'](#event-outdata)
@@ -101,7 +102,6 @@ kapok
 
 - `config.shouldShowLog` \<Boolean\>: Show log message or not. Defaults to `true`
 - `config.shouldThrowError` \<Boolean\>: Throw a new Error or not when assert fails. Defaults to `false`
-- `shouldKillOnDone` \<Boolean\>: Kill kapok proceee on `done`. Defaults to `false`
 
 A global config to all `Kapok` instances. Can be override.
 
@@ -313,6 +313,16 @@ const kapok = new Kapok('echo', ['hello']);
 
 test('echo', async () => kapok.assert('hello').done());
 ```
+
+---
+
+<a name="kapokdoneandkillcallback"></a>
+#### Kapok#doneAndKill([callback])
+
+- `callback` \<Function\>: Provide a callback function. If there's no error, the first argument is `undefined`, otherwise, the first argument is an array of errors
+- Returns \<Promise\>
+
+Like `done()`, but also kill the process after stop asserting.
 
 ---
 
