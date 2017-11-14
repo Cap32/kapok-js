@@ -32,7 +32,6 @@ export default class Kapok extends EventEmitter {
 	static config = {
 		shouldShowLog: true,
 		shouldThrowError: false,
-		shouldKillOnDone: false,
 	};
 
 	static start(...args) {
@@ -56,7 +55,7 @@ export default class Kapok extends EventEmitter {
 		this.errors = [];
 		this._stash = [];
 		this._isPending = false;
-		this._done = noop;
+		this._performDone = noop;
 
 		Kapok.config.shouldShowLog && log(
 			chalk.dim.bold(figures.pointerSmall),
@@ -126,7 +125,7 @@ export default class Kapok extends EventEmitter {
 		onExit((code, signal) => {
 			this.errors.push(new Error(signal));
 			this.emit('signal:exit', code, signal);
-			this._done();
+			this._performDone();
 		});
 
 		kapoks.add(this);
@@ -294,11 +293,11 @@ export default class Kapok extends EventEmitter {
 		return this.assert(condition, options);
 	}
 
-	done(callback) {
+	_done(shouldKill, callback) {
 		return callMaybe(callback, new Promise((resolve, reject) => {
-			this._done = once(async () => {
+			this._performDone = once(async () => {
 				const { errors } = this;
-				if (Kapok.config.shouldKillOnDone) {
+				if (shouldKill) {
 					await this.kill().catch(noop);
 				}
 				kapoks.delete(this);
@@ -308,6 +307,14 @@ export default class Kapok extends EventEmitter {
 				else { resolve(); }
 			});
 		}));
+	}
+
+	done(callback) {
+		return this._done(false, callback);
+	}
+
+	doneAndKill(callback) {
+		return this._done(true, callback);
 	}
 
 	_requestNext() {
@@ -337,7 +344,7 @@ export default class Kapok extends EventEmitter {
 		this._isPending = false;
 
 		if (!this._fns.length) {
-			this._done();
+			this._performDone();
 		}
 		else {
 			await this._next();
