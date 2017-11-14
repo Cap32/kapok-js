@@ -257,6 +257,8 @@ test('should `kill()` work', async () => {
 });
 
 test('should `Kapok.killAll()` work', async () => {
+	await Kapok.killAll();
+	expect(Kapok.size).toBe(0);
 	Kapok.start('node', ['-e', 'setTimeout(() => {}, 1000)']);
 	Kapok.start('node', ['-e', 'setTimeout(() => {}, 1000)']);
 	Kapok.start('node', ['-e', 'setTimeout(() => {}, 1000)']);
