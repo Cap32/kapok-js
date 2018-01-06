@@ -45,6 +45,17 @@ test('done with promise', () => {
 	return kapok.assert('async').done();
 });
 
+test('command with no output', (done) => {
+	const kapok = new Kapok('node', ['-e', '']);
+	kapok
+        .assert('')
+		.done((err) => {
+			if (err) { done.fail(err); }
+			else { done(); }
+		})
+	;
+});
+
 test('chaining `assert()`', () => {
 	const code = `
 		console.log('hello');
