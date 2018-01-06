@@ -114,7 +114,15 @@ export default class Kapok extends EventEmitter {
 		));
 
 		child.on('error', (...args) => this.emit('error', ...args));
-		child.on('exit', (...args) => this.emit('exit', ...args));
+		child.on('exit', async (...args) => {
+			if (this._fns.length) {
+				if (!this._stash.length) this._stash.push('')
+				await this._requestNext()
+			} else {
+				this._performDone()
+		    }
+			this.emit('exit', ...args);
+		});
 
 		this.child = child;
 		this.stdin = child.stdin;
