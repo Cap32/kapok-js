@@ -22,6 +22,7 @@ Javascript Testing utilities for CLI
   - [Kapok#until\(condition\[, options\]\)](#kapokuntilcondition-options)
   - [Kapok#assertUntil\(condition\[, options\]\)](#kapokassertuntilcondition-options)
   - [Kapok#ignoreUntil\(condition\[, options\]\)](#kapokignoreuntilcondition-options)
+  - [Kapok#assertExitCode\(condition\[, options\]\)](#kapokassertexitcodecondition-options)
   - [Kapok#done\(\[callback\]\)](#kapokdonecallback)
   - [Kapok#doneAndKill\(\[callback\]\)](#kapokdoneandkillcallback)
   - [Kapok#kill\(\[signal, callback\]\)](#kapokkillsignal-callback)
@@ -292,6 +293,29 @@ A little like `.until()`, but `.ignoreUntil()` will event ignore the last line o
 ```js
 const kapok = new Kapok('echo', ['# a\n# b\nc']);
 kapok.ignoreUntil(/^#/).assert('c'); /* lines before 'c' would be ignored */
+```
+
+---
+
+<a name="kapokassertexitcodecondition-options"></a>
+#### Kapok#assertExitCode(condition[, options])
+
+- `condition` \<Number\>: Testing `exitCode`. Throws an error if does not match exit code of process.
+- `options` \<Object\>
+  + `message` \<String|Function\>: A custom error message or callback function.
+  + `shouldShowLog` \<Boolean\>: Show log message or not. Defaults to `Kapok.config.shouldShowLog`
+- Returns \<Promise\>
+
+Wait for the process to complete and assert the exit code.
+
+###### Example
+
+Using [jest](http://facebook.github.io/jest/)
+
+```js
+const kapok = new Kapok('node', ['-e', 'console.error("oops!"); process.exit(1);']);
+
+test('exit code', async () => kapok.assert('oops!').assertExitCode(1).done());
 ```
 
 ---

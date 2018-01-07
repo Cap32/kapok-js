@@ -37,6 +37,22 @@ test('`assert()`', (done) => {
 	;
 });
 
+test('`assertExitCode()`', (done) => {
+	const code = `
+		console.error('something went wrong ;(')
+		process.exit(1)
+	`;
+	const kapok = new Kapok('node', ['-e', code]);
+	kapok
+		.assert('something went wrong ;(')
+		.assertExitCode(1)
+		.done((err) => {
+			if (err) { done.fail(err); }
+			else { done(); }
+		})
+	;
+});
+
 test('done with promise', () => {
 	const code = `
 		setTimeout(() => console.log('async'), 1000);
