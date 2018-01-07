@@ -28,6 +28,16 @@ const deprecated = function deprecated(oldMethod, newMethod) {
 
 const kapoks = new Set();
 
+class Deferred {
+	constructor() {
+		this.promise = new Promise((resolve, reject) => {
+			this.resolve = resolve;
+			this.reject = reject;
+		});
+		Object.freeze(this);
+	}
+}
+
 export default class Kapok extends EventEmitter {
 	static config = {
 		shouldShowLog: true,
@@ -114,7 +124,10 @@ export default class Kapok extends EventEmitter {
 		));
 
 		child.on('error', (...args) => this.emit('error', ...args));
-		child.on('exit', (...args) => this.emit('exit', ...args));
+		child.on('exit', (...args) => {
+			if (this._deferredExitCode) { this._deferredExitCode.resolve(args[0]); }
+			this.emit('exit', ...args);
+		});
 
 		this.child = child;
 		this.stdin = child.stdin;
@@ -197,6 +210,46 @@ export default class Kapok extends EventEmitter {
 			await action(message, lines, this);
 			lines.length = 0;
 		});
+		return this;
+	}
+
+	assertExitCode(condition, options) {
+		const ensureOptions = (options = {}) => {
+			if (isString(options)) { options = { errorMessage: options }; }
+			return defaults(options, { ...Kapok.config });
+		};
+
+		const { shouldShowLog, ...other } = ensureOptions(options);
+
+		const registerError = (error) => {
+			const { message } = error;
+			let { errorMessage } = other;
+
+			if (isFunction(errorMessage)) {
+				errorMessage = errorMessage(message, condition);
+			}
+
+			if (!isString(errorMessage)) {
+				errorMessage = chalk.red(`${figures.cross} `) +
+					// eslint-disable-next-line
+					`Expected exit code to be ${condition}, but received ${message}.`;
+			}
+
+			error.message = errorMessage;
+
+			this.errors.push(error);
+		};
+
+		this._deferredExitCode = new Deferred();
+		this._exitCodeFn = async () => {
+			const actual = await this._deferredExitCode.promise;
+			if (actual !== condition) {
+				registerError(new Error(actual));
+			}
+			else if (shouldShowLog) {
+				log(`${chalk.green(figures.tick)} exit code ${chalk.gray(actual)}`);
+			}
+		};
 		return this;
 	}
 
@@ -296,6 +349,7 @@ export default class Kapok extends EventEmitter {
 	_done(shouldKill, callback) {
 		return callMaybe(callback, new Promise((resolve, reject) => {
 			this._performDone = once(async () => {
+				if (this._exitCodeFn) { await this._exitCodeFn(); }
 				const { errors } = this;
 				if (shouldKill) {
 					await this.kill().catch(noop);
