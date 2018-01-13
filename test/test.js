@@ -249,6 +249,30 @@ test('should throw error if action throws error', async () => {
 	).rejects.toBeDefined();
 });
 
+test('should throw error if command is not found', (done) => {
+	new Kapok('no-such-command')
+	  .on('error', (err) => done())
+	  .done(() => done.fail())
+});
+
+test('should use custom message if command is not found', (done) => {
+	new Kapok('no-such-command')
+	  .on('error', (err) => {
+		expect(err.message).toBe('command not found: "no-such-command"')
+	    done();
+	  })
+	  .done(() => done.fail())
+});
+
+test('should show helpful hint if missing command contains spaces', (done) => {
+	new Kapok('ls -1')
+	  .on('error', (err) => {
+		expect(err.message).toEqual(expect.stringContaining('Did you mean to pass arguments to command `ls\'?'))
+	    done();
+	  })
+	  .done(() => done.fail())
+});
+
 test('should `kill()` work', async () => {
 	const kapok = new Kapok('node', ['-e', 'setTimeout(() => {}, 1000)']);
 	kapok.assert('a');
