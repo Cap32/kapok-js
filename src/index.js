@@ -113,7 +113,17 @@ export default class Kapok extends EventEmitter {
 			(data) => this.emit('err:data', data),
 		));
 
-		child.on('error', (...args) => this.emit('error', ...args));
+		child.on('error', (...args) => {
+			const err = args[0];
+			if (err && err.code === 'ENOENT') {
+				err.message = 'command not found: "' + command + '"';
+				const spaceIdx = command.indexOf(' ');
+				if (~spaceIdx) {
+					err.message += ' (Did you mean to pass arguments to command `' + command.substr(0, spaceIdx) + '\'?)';
+				}
+			}
+			this.emit('error', ...args);
+		});
 		child.on('exit', (...args) => this.emit('exit', ...args));
 
 		this.child = child;
