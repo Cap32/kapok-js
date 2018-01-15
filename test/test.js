@@ -25,6 +25,14 @@ test('should receive ansiMessage on `out:data` event', (done) => {
 	});
 });
 
+test('should parse command arguments passed as a string', (done) => {
+	const kapok = new Kapok('echo', "-e -n 'hello there\\nworld'");
+	kapok.on('out:data', ({ message, exit }) => {
+		expect(message).toBe('hello there\nworld');
+		exit(done);
+	});
+});
+
 test('`assert()`', (done) => {
 	const input = 'hello world';
 	const kapok = new Kapok('echo', [input]);
