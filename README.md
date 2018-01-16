@@ -112,7 +112,7 @@ A global config to all `Kapok` instances. Can be override.
 #### Kapok.start(command[, args][, options])
 
 - `command` \<String\>: The command to run
-- `args` \<Array\>: List of string arguments
+- `args` \<Array|String\>: List of string arguments
 - `options` \<Object\>: Just like [spawn options](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)
 - Returns \<Kapok\>
 

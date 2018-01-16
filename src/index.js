@@ -8,6 +8,7 @@ import { isFunction, isRegExp, isString, isNumber, defaults, noop, once } from '
 import figures from 'figures';
 import onExit from 'signal-exit';
 import fkill from 'fkill';
+import toArgv from 'string-argv';
 
 const test = (condition, message, lines) => {
 	if (isFunction(condition)) { return condition(message, lines); }
@@ -56,6 +57,8 @@ export default class Kapok extends EventEmitter {
 		this._stash = [];
 		this._isPending = false;
 		this._performDone = noop;
+
+		if (!Array.isArray(args)) args = toArgv(args);
 
 		Kapok.config.shouldShowLog && log(
 			chalk.dim.bold(figures.pointerSmall),
