@@ -1,5 +1,6 @@
 
 import { spawn } from 'child_process';
+import AssertionError from 'assertion-error';
 import EventEmitter from 'events';
 import stripAnsi from 'strip-ansi';
 import chalk from 'chalk';
@@ -32,6 +33,7 @@ export default class Kapok extends EventEmitter {
 	static config = {
 		shouldShowLog: true,
 		shouldThrowError: false,
+		shouldColorizeError: true,
 	};
 
 	static start(...args) {
@@ -123,7 +125,7 @@ export default class Kapok extends EventEmitter {
 		this.kill = ::this.exit;
 
 		onExit((code, signal) => {
-			this.errors.push(new Error(signal));
+			this.errors.push(new AssertionError(signal));
 			this.emit('signal:exit', code, signal);
 			this._performDone();
 		});
@@ -151,7 +153,7 @@ export default class Kapok extends EventEmitter {
 		};
 
 		const {
-			action, shouldShowLog, shouldThrowError, ...other,
+			action, shouldShowLog, shouldThrowError, shouldColorizeError, ...other,
 		} = ensureOptions(options);
 
 		const throwError = (error) => {
@@ -165,17 +167,19 @@ export default class Kapok extends EventEmitter {
 			if (!isString(errorMessage)) {
 				errorMessage = chalk.red(`${figures.cross} `);
 				if (isString(condition)) {
-
 					// eslint-disable-next-line
-					errorMessage += `Expected value to be "${chalk.green(condition)}", but received "${chalk.red(message)}".`;
-
+					errorMessage += `expected "${chalk.red(message)}" to be "${chalk.green(condition)}"`;
+					error.actual = message;
+					error.expected = condition;
+					error.showDiff = true;
 				}
 				else {
-					errorMessage += `Message is "${message}"`;
+					errorMessage += `message is "${message}"`;
 				}
 			}
 
-			error.message = errorMessage;
+			error.message = shouldColorizeError ?
+				errorMessage : stripAnsi(errorMessage);
 
 			if (shouldThrowError) { throw error; }
 			else {
@@ -189,7 +193,7 @@ export default class Kapok extends EventEmitter {
 			const matched = test(condition, message, lines);
 
 			if (!matched) {
-				throwError(new Error(message));
+				throwError(new AssertionError(message));
 			}
 			else if (shouldShowLog) {
 				log(`${chalk.green(figures.tick)} ${chalk.gray(message)}`);
@@ -301,7 +305,7 @@ export default class Kapok extends EventEmitter {
 					await this.kill().catch(noop);
 				}
 				if (errors.length) {
-					reject(errors);
+					reject(errors.length === 1 ? errors[0] : errors);
 				}
 				else { resolve(this); }
 			});

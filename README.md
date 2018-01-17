@@ -102,6 +102,7 @@ kapok
 
 - `config.shouldShowLog` \<Boolean\>: Show log message or not. Defaults to `true`
 - `config.shouldThrowError` \<Boolean\>: Throw a new Error or not when assert fails. Defaults to `false`
+- `config.shouldColorizeError` \<Boolean\>: Whether error messages should be colorized using ANSI escape codes. Defaults to `true`
 
 A global config to all `Kapok` instances. Can be override.
 
@@ -165,6 +166,7 @@ The same with `Kapok.start()`
   + `action` \<Function\>: An addition function to do something while `assert` function fires. Support returning a promise for async action
   + `shouldShowLog` \<Boolean\>: Show log message or not. Defaults to `Kapok.config.shouldShowLog`
   + `shouldThrowError` \<Boolean\>: Throw a new Error or not when assert fails. Defaults to `Kapok.config.shouldThrowError`
+  + `shouldColorizeError` \<Boolean\>: Whether ANSI escape codes should be used to colorize error message. Defaults to `Kapok.config.shouldColorizeError`
 - Returns \<Kapok\>
 
 Iterate each line of the process outputs, and assert the data message of each line.

@@ -26,6 +26,7 @@
   ],
   "licenses": "MIT",
   "dependencies": {
+    "assertion-error": "^1.1.0",
     "call-me-maybe": "^1.0.1",
     "chalk": "^2.1.0",
     "figures": "^2.0.0",
