@@ -221,14 +221,51 @@ test('`assertUntil()`', () => {
 // });
 
 test('should throw error with callback if assert fails', (done) => {
-	const kapok = new Kapok('echo', ['a']);
+	const kapok = new Kapok('echo', ['a\nb']);
 	kapok
 		.assert('b')
+		.assert('c')
 		.done((err) => {
-			expect(err.length).toBe(1);
+			expect(err.length).toBe(2);
 			done();
 		})
 	;
+});
+
+test('should use AssertionError class for assertion errors', (done) => {
+	const input = 'hello world\nget to it';
+	const kapok = new Kapok('echo', [input]);
+	kapok
+		.assert('hallo world')
+		.assert('who there?')
+		.done((err) => {
+			expect(err.length).toBe(2);
+			expect(err[0].constructor.name).toBe('AssertionError');
+			done();
+		})
+	;
+});
+
+test('should not colorize assertion error if shouldColorizeError option is false', (done) => {
+	const input = 'hello world\ngo on';
+	const kapok = new Kapok('echo', [input]);
+	kapok
+		.assert('hallo world', { shouldColorizeError: false })
+		.assert('who there?', { shouldColorizeError: false })
+		.done((err) => {
+			expect(err.length).toBe(2);
+			expect(err[0].message).not.toMatch(/\u001b/);
+			done();
+		})
+	;
+});
+
+test('should unwrap assertion error if errors has length of 1', async () => {
+	const input = 'hello world';
+	const kapok = new Kapok('echo', [input]);
+	await expect(
+		kapok.assert('hallo world').done()
+	).rejects.not.toBeInstanceOf(Array);
 });
 
 test('should throw error with async if assert fails', async () => {
