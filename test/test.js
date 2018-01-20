@@ -249,6 +249,28 @@ test('should throw error if action throws error', async () => {
 	).rejects.toBeDefined();
 });
 
+test('should allow options to be set per method', async () => {
+	// action is not called on failed assertion if shouldThrowError is true
+	const action = jest.fn();
+	await expect(
+		new Kapok('echo', ['a'])
+			.assert('b', { action, shouldThrowError: true })
+			.done()
+	).rejects.toBeDefined();
+	expect(action.mock.calls.length).toBe(0);
+});
+
+test('should allow options to be set per instance', async () => {
+	// action is not called on failed assertion if shouldThrowError is true
+	const action = jest.fn();
+	await expect(
+		new Kapok('echo', ['a'], { shouldThrowError: true })
+			.assert('b', { action })
+			.done()
+	).rejects.toBeDefined();
+	expect(action.mock.calls.length).toBe(0);
+});
+
 test('should `kill()` work', async () => {
 	const kapok = new Kapok('node', ['-e', 'setTimeout(() => {}, 1000)']);
 	kapok.assert('a');

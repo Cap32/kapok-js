@@ -56,8 +56,22 @@ export default class Kapok extends EventEmitter {
 		this._stash = [];
 		this._isPending = false;
 		this._performDone = noop;
+		if (options) {
+			this._config = Object.keys(Kapok.config)
+				.reduce((accum, configKey) => {
+					if (configKey in options) {
+						accum[configKey] = options[configKey];
+						delete options[configKey];
+					} else {
+						accum[configKey] = Kapok.config[configKey];
+					}
+					return accum;
+				}, {});
+		} else {
+			this._config = { ...Kapok.config };
+		}
 
-		Kapok.config.shouldShowLog && log(
+		this._config.shouldShowLog && log(
 			chalk.dim.bold(figures.pointerSmall),
 			chalk.gray(JSON.stringify([command, ...args].join(' ')).replace(/^"|"$/g, '')),
 		);
@@ -146,7 +160,7 @@ export default class Kapok extends EventEmitter {
 
 			return defaults(options, {
 				action: noop,
-				...Kapok.config,
+				...this._config,
 			});
 		};
 
@@ -202,7 +216,7 @@ export default class Kapok extends EventEmitter {
 
 	_group(condition, options = {}) {
 		const {
-			shouldShowLog = Kapok.config.shouldShowLog,
+			shouldShowLog = this._config.shouldShowLog,
 			getLogMessage,
 			join,
 			action,
