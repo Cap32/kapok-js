@@ -8,8 +8,9 @@ node_js:
   - 8
   - 9
 
-install:
-  - npm install
+script:
+- npm run lint
+- npm test
 
 notifications:
   email:
