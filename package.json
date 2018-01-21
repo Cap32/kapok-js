@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "start": "yarn test -- --watchAll",
+    "lint": "eslint src",
     "test": "cross-env NODE_ENV=development jest",
     "prebuild": "rimraf lib",
     "build": "babel src -d lib",
