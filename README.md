@@ -120,6 +120,23 @@ Spawns a new process using the given `command`, just like `child_process.spawn()
 
 `Kapok` inherits [EventEmitter](https://nodejs.org/api/events.html#events_class_eventemitter)
 
+By default, the command is not spawned from a shell. If you want to spawn the command from a shell, which in turn applies shell expansion to the arguments, you can either set the `shell` option to `true`:
+
+```js
+Kapok
+  .start('ls', ['*.json'], { shell: true })
+  .assert(/\.json$/)
+  .done()
+```
+
+or you can specify a shell directly:
+
+```js
+Kapok
+  .start('ls', ['*.json'], { shell: process.env.ComSpec || process.env.SHELL || '/bin/sh' })
+  .assert(/\.json$/)
+  .done()
+```
 
 ---
 
